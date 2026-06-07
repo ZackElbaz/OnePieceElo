@@ -77,15 +77,46 @@ begin
 end; $$;
 
 create or replace function public.get_random_pair()
-returns table(left_character jsonb, right_character jsonb) language sql stable as $$
-  with picked as (
-    select * from public.character_rankings where active = true order by random() limit 2
-  ), numbered as (
-    select row_number() over () as rn, to_jsonb(picked.*) as data from picked
+returns table(left_character jsonb, right_character jsonb)
+language sql
+stable
+as $$
+  with ranked as (
+    select
+      c.*,
+      coalesce(r.elo_rating, 1500) as elo_rating,
+      coalesce(r.wins, 0) as wins,
+      coalesce(r.losses, 0) as losses,
+      coalesce(r.comparisons, 0) as comparisons
+    from public.characters c
+    left join public.ratings r on r.character_id = c.id
+    where c.active = true
+  ),
+
+  first_pick as (
+    select *
+    from ranked
+    order by
+      comparisons asc,
+      random()
+    limit 1
+  ),
+
+  second_pick as (
+    select r.*
+    from ranked r
+    cross join first_pick f
+    where r.id <> f.id
+    order by
+      abs(r.elo_rating - f.elo_rating) asc,
+      r.comparisons asc,
+      random()
+    limit 1
   )
+
   select
-    (select data from numbered where rn = 1) as left_character,
-    (select data from numbered where rn = 2) as right_character;
+    (select to_jsonb(first_pick.*) from first_pick) as left_character,
+    (select to_jsonb(second_pick.*) from second_pick) as right_character;
 $$;
 
 alter table public.characters enable row level security;

@@ -48,7 +48,21 @@ function InfoModal({ character, onClose }) {
         </div>
         <p>{character.description || 'No description synced yet.'}</p>
         <dl>
-          <dt>Devil Fruit</dt><dd>{character.devil_fruit_name || 'Unknown / none'}</dd>
+          <dt>Devil Fruit</dt>
+          <dd>
+            {character.devil_fruit_name
+              ? (
+                <>
+                  {character.devil_fruit_name}
+                  {character.devil_fruit_english_name
+                    ? <><br /><span className="muted">{character.devil_fruit_english_name}</span></>
+                    : null}
+                </>
+              )
+              : character.devil_fruit_user
+                ? 'Known Devil Fruit user'
+                : 'Unknown / none'}
+          </dd>
           <dt>Haki</dt><dd>{character.haki_types?.join(', ') || (character.haki_user ? 'Yes' : 'Unknown / none')}</dd>
           <dt>Bounty</dt><dd>{character.bounty || 'Unknown / none'}</dd>
           <dt>Race</dt><dd>{character.race || 'Unknown'}</dd>

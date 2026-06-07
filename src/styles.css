@@ -206,6 +206,10 @@ dt{font-weight:700}
 
 .error{text-align:center;color:#fca5a5;margin:4px 0}
 
+.muted{
+  color:#94a3b8;
+}
+
 @media (orientation:portrait){
   .votePage{padding:70px 12px 12px}
   .topBar{gap:8px}
