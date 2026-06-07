@@ -1,5 +1,8 @@
 *{box-sizing:border-box}
-html,body,#root{width:100%;height:100%;overflow:hidden}
+html,body,#root{
+  width:100%;
+  min-height:100%;
+}
 body{margin:0;background:#080b12;color:white;font-family:Inter,system-ui,Arial,sans-serif}
 button{font:inherit}
 
@@ -15,10 +18,9 @@ nav button,.topBar button,.filters button{
 
 .votePage{
   height:100dvh;
-  padding:58px 14px 12px;
+  overflow:hidden;
   display:flex;
   flex-direction:column;
-  overflow:hidden;
 }
 
 .topBar{
@@ -113,18 +115,93 @@ dt{font-weight:700}
 .wikiLink{display:inline-block;margin-top:12px;color:#93c5fd}
 
 .rankPage{
-  height:100dvh;
-  overflow:auto;
-  padding:80px 20px 40px;
+  padding:90px 20px 40px;
   max-width:900px;
-  margin:auto
+  margin:auto;
 }
+
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
 .filters .active{background:white;color:#020617}
-.rankList{display:flex;flex-direction:column;gap:8px}
-.rankRow{display:grid;grid-template-columns:60px 54px 1fr auto;gap:12px;align-items:center;background:#111827;border:1px solid #263247;border-radius:16px;padding:10px}
-.rankRow img{width:54px;height:54px;object-fit:contain;background:#020617;border-radius:12px}
-.rankRow small{color:#94a3b8}
+
+.rankList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.rankRow{
+  display:grid;
+  grid-template-columns:44px 54px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+  background:#111827;
+  border:1px solid #263247;
+  border-radius:16px;
+  padding:12px 14px;
+}
+
+.rankNumber{
+  font-size:18px;
+  text-align:center;
+}
+
+.rankRow img,
+.rankAvatar{
+  width:54px;
+  height:54px;
+  object-fit:contain;
+  background:#020617;
+  border-radius:12px;
+}
+
+.rankAvatar{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#64748b;
+  font-weight:900;
+}
+
+.rankNameBlock{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.rankNameLine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
+.rankName{
+  font-size:18px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.rankInfo{
+  flex:0 0 auto;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  border:1px solid #ffffff66;
+  background:#00000080;
+  color:white;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.rankNameBlock small{
+  color:#94a3b8;
+  white-space:nowrap;
+}
+
 .error{text-align:center;color:#fca5a5;margin:4px 0}
 
 @media (orientation:portrait){
@@ -142,8 +219,21 @@ dt{font-weight:700}
   .cardText{padding:14px}
   .card h2{font-size:clamp(20px,7vw,36px);margin:36px 0 8px}
   .tags span{font-size:11px;padding:3px 7px}
-  .rankRow{grid-template-columns:42px 46px 1fr}
-  .rankRow small{grid-column:3}
+  .rankRow{
+    grid-template-columns:34px 44px minmax(0,1fr);
+    gap:10px;
+    padding:10px;
+    }
+
+    .rankRow img,
+    .rankAvatar{
+    width:44px;
+    height:44px;
+    }
+
+    .rankName{
+    font-size:16px;
+    }
   .modalTop{align-items:flex-start}
   .modalTop img{width:90px;height:90px}
 }

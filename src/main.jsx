@@ -104,30 +104,73 @@ const FILTERS = [
 function Rankings() {
   const [filter, setFilter] = useState('all');
   const [rows, setRows] = useState([]);
+  const [modalCharacter, setModalCharacter] = useState(null);
 
   useEffect(() => {
-    let q = supabase.from('character_rankings').select('*').order('elo_rating', { ascending: false }).limit(500);
+    let q = supabase
+      .from('character_rankings')
+      .select('*')
+      .order('elo_rating', { ascending: false })
+      .limit(500);
+
     if (filter === 'alive') q = q.eq('status', 'Alive');
     if (filter === 'swordsman') q = q.eq('swordsman', true);
     if (filter === 'devil_fruit_user') q = q.eq('devil_fruit_user', true);
     if (filter === 'haki_user') q = q.eq('haki_user', true);
     if (filter === 'female') q = q.ilike('gender', 'female');
     if (filter === 'male') q = q.ilike('gender', 'male');
+
     q.then(({ data }) => setRows(data || []));
   }, [filter]);
 
   return (
     <main className="rankPage">
       <h1>Live Strength Ranking</h1>
-      <div className="filters">{FILTERS.map(([id, label]) => <button className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} key={id}>{label}</button>)}</div>
-      <div className="rankList">{rows.map((c, i) => (
-        <div className="rankRow" key={c.id}>
-          <strong>#{i + 1}</strong>
-          {c.image_url && <img src={c.image_url} alt="" />}
-          <span>{c.name}</span>
-          <small>{Math.round(c.elo_rating)} Elo · {c.wins}W/{c.losses}L</small>
-        </div>
-      ))}</div>
+
+      <div className="filters">
+        {FILTERS.map(([id, label]) => (
+          <button
+            className={filter === id ? 'active' : ''}
+            onClick={() => setFilter(id)}
+            key={id}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="rankList">
+        {rows.map((c, i) => (
+          <div className="rankRow" key={c.id}>
+            <strong className="rankNumber">{i + 1}</strong>
+
+            {c.image_url ? (
+              <img src={c.image_url} alt="" />
+            ) : (
+              <div className="rankAvatar">?</div>
+            )}
+
+            <div className="rankNameBlock">
+              <div className="rankNameLine">
+                <span className="rankName">{c.name}</span>
+                <button
+                  className="rankInfo"
+                  onClick={() => setModalCharacter(c)}
+                  aria-label={`Info about ${c.name}`}
+                >
+                  i
+                </button>
+              </div>
+              <small>{Math.round(c.elo_rating)} Elo · {c.wins}W/{c.losses}L</small>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <InfoModal
+        character={modalCharacter}
+        onClose={() => setModalCharacter(null)}
+      />
     </main>
   );
 }
