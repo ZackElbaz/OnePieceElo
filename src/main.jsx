@@ -1,0 +1,140 @@
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { supabase } from './lib/supabase';
+import './styles.css';
+
+function tagList(c) {
+  const tags = [];
+  if (c.swordsman) tags.push('Swordsman');
+  if (c.devil_fruit_user) tags.push('Devil Fruit');
+  if (c.haki_user) tags.push('Haki');
+  if (c.gender) tags.push(c.gender);
+  if (c.status) tags.push(c.status);
+  if (c.affiliations?.length) tags.push(...c.affiliations.slice(0, 2));
+  return tags;
+}
+
+function CharacterCard({ character, side, onVote, onInfo }) {
+  return (
+    <button className={`card ${side}`} onClick={onVote} disabled={!character}>
+      {character ? (
+        <>
+          <button className="info" onClick={(e) => { e.stopPropagation(); onInfo(character); }}>i</button>
+          <div className="imageWrap">
+            {character.image_url ? <img src={character.image_url} alt={character.name} /> : <div className="placeholder">?</div>}
+          </div>
+          <div className="cardText">
+            <h2>{character.name}</h2>
+            <div className="tags">{tagList(character).map(t => <span key={t}>{t}</span>)}</div>
+          </div>
+        </>
+      ) : <div className="loading">Loading...</div>}
+    </button>
+  );
+}
+
+function InfoModal({ character, onClose }) {
+  if (!character) return null;
+  return (
+    <div className="modalBackdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <button className="close" onClick={onClose}>×</button>
+        <div className="modalTop">
+          {character.image_url && <img src={character.image_url} alt={character.name} />}
+          <div>
+            <h1>{character.name}</h1>
+            <div className="tags">{tagList(character).map(t => <span key={t}>{t}</span>)}</div>
+          </div>
+        </div>
+        <p>{character.description || 'No description synced yet.'}</p>
+        <dl>
+          <dt>Devil Fruit</dt><dd>{character.devil_fruit_name || 'Unknown / none'}</dd>
+          <dt>Haki</dt><dd>{character.haki_types?.join(', ') || (character.haki_user ? 'Yes' : 'Unknown / none')}</dd>
+          <dt>Bounty</dt><dd>{character.bounty || 'Unknown / none'}</dd>
+          <dt>Race</dt><dd>{character.race || 'Unknown'}</dd>
+        </dl>
+        {character.wiki_url && <a className="wikiLink" href={character.wiki_url} target="_blank" rel="noreferrer">Open full wiki page</a>}
+      </div>
+    </div>
+  );
+}
+
+function VoteMode() {
+  const [pair, setPair] = useState(null);
+  const [modalCharacter, setModalCharacter] = useState(null);
+  const [message, setMessage] = useState('');
+
+  async function loadPair() {
+    setMessage('');
+    const { data, error } = await supabase.rpc('get_random_pair');
+    if (error) setMessage(error.message);
+    else setPair(data?.[0] || null);
+  }
+
+  useEffect(() => { loadPair(); }, []);
+
+  async function vote(winner, loser) {
+    if (!winner || !loser) return;
+    const { error } = await supabase.rpc('submit_vote', { winner_id: winner.id, loser_id: loser.id });
+    if (error) setMessage(error.message);
+    else loadPair();
+  }
+
+  const left = pair?.left_character;
+  const right = pair?.right_character;
+
+  return (
+    <main className="votePage">
+      <header className="topBar"><h1>Who wins in a serious 1v1?</h1><button onClick={loadPair}>Skip</button></header>
+      {message && <p className="error">{message}</p>}
+      <section className="versus">
+        <CharacterCard character={left} side="left" onVote={() => vote(left, right)} onInfo={setModalCharacter} />
+        <div className="vs">VS</div>
+        <CharacterCard character={right} side="right" onVote={() => vote(right, left)} onInfo={setModalCharacter} />
+      </section>
+      <InfoModal character={modalCharacter} onClose={() => setModalCharacter(null)} />
+    </main>
+  );
+}
+
+const FILTERS = [
+  ['all', 'All'], ['alive', 'Alive'], ['swordsman', 'Swordsmen'], ['devil_fruit_user', 'Devil Fruit'], ['haki_user', 'Haki'], ['female', 'Women'], ['male', 'Men']
+];
+
+function Rankings() {
+  const [filter, setFilter] = useState('all');
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    let q = supabase.from('character_rankings').select('*').order('elo_rating', { ascending: false }).limit(500);
+    if (filter === 'alive') q = q.eq('status', 'Alive');
+    if (filter === 'swordsman') q = q.eq('swordsman', true);
+    if (filter === 'devil_fruit_user') q = q.eq('devil_fruit_user', true);
+    if (filter === 'haki_user') q = q.eq('haki_user', true);
+    if (filter === 'female') q = q.ilike('gender', 'female');
+    if (filter === 'male') q = q.ilike('gender', 'male');
+    q.then(({ data }) => setRows(data || []));
+  }, [filter]);
+
+  return (
+    <main className="rankPage">
+      <h1>Live Strength Ranking</h1>
+      <div className="filters">{FILTERS.map(([id, label]) => <button className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} key={id}>{label}</button>)}</div>
+      <div className="rankList">{rows.map((c, i) => (
+        <div className="rankRow" key={c.id}>
+          <strong>#{i + 1}</strong>
+          {c.image_url && <img src={c.image_url} alt="" />}
+          <span>{c.name}</span>
+          <small>{Math.round(c.elo_rating)} Elo · {c.wins}W/{c.losses}L</small>
+        </div>
+      ))}</div>
+    </main>
+  );
+}
+
+function App() {
+  const [page, setPage] = useState('vote');
+  return <><nav><button onClick={() => setPage('vote')}>Vote</button><button onClick={() => setPage('rankings')}>Rankings</button></nav>{page === 'vote' ? <VoteMode /> : <Rankings />}</>;
+}
+
+createRoot(document.getElementById('root')).render(<App />);
