@@ -64,7 +64,12 @@ function InfoModal({ character, onClose }) {
                 : 'Unknown / none'}
           </dd>
           <dt>Haki</dt><dd>{character.haki_types?.join(', ') || (character.haki_user ? 'Yes' : 'Unknown / none')}</dd>
-          <dt>Bounty</dt><dd>{character.bounty || 'Unknown / none'}</dd>
+          <dt>Bounty</dt>
+          <dd>
+            {character.bounty
+              ? `฿ ${Number(character.bounty).toLocaleString()}`
+              : 'Unknown / none'}
+          </dd>
           <dt>Race</dt><dd>{character.race || 'Unknown'}</dd>
         </dl>
         {character.wiki_url && <a className="wikiLink" href={character.wiki_url} target="_blank" rel="noreferrer">Open full wiki page</a>}
