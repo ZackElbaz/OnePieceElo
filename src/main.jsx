@@ -48,14 +48,22 @@ function InfoModal({ character, onClose }) {
         </div>
         <p>{character.description || 'No description synced yet.'}</p>
         <dl>
+          <dt>Status</dt>
+          <dd>{character.status || 'Unknown'}</dd>
+
           <dt>Devil Fruit</dt>
           <dd>
             {character.devil_fruit_name
               ? (
                 <>
                   {character.devil_fruit_name}
+
                   {character.devil_fruit_english_name
                     ? <><br /><span className="muted">{character.devil_fruit_english_name}</span></>
+                    : null}
+
+                  {character.devil_fruit_type
+                    ? <><br /><span className="muted">Type: {character.devil_fruit_type}</span></>
                     : null}
                 </>
               )
@@ -63,14 +71,23 @@ function InfoModal({ character, onClose }) {
                 ? 'Known Devil Fruit user'
                 : 'Unknown / none'}
           </dd>
-          <dt>Haki</dt><dd>{character.haki_types?.join(', ') || (character.haki_user ? 'Yes' : 'Unknown / none')}</dd>
-          <dt>Bounty</dt>
+
+          <dt>Haki</dt>
+          <dd>
+            {character.haki_types?.length
+              ? character.haki_types.join(', ')
+              : 'Unknown / none'}
+          </dd>
+
+          <dt>{character.status === 'Deceased' ? 'Last Bounty' : 'Bounty'}</dt>
           <dd>
             {character.bounty
               ? `฿ ${Number(character.bounty).toLocaleString()}`
               : 'Unknown / none'}
           </dd>
-          <dt>Race</dt><dd>{character.race || 'Unknown'}</dd>
+
+          <dt>Race</dt>
+          <dd>{character.race || 'Unknown'}</dd>
         </dl>
         {character.wiki_url && <a className="wikiLink" href={character.wiki_url} target="_blank" rel="noreferrer">Open full wiki page</a>}
       </div>

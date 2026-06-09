@@ -130,6 +130,25 @@ function getInfoboxFieldsByPrefix(source, prefix) {
     .filter((item) => item.value);
 }
 
+function normaliseStatus(value, categories) {
+  const raw = cleanText(value);
+
+  if (hasCategory(categories, [/Deceased Characters/i])) return 'Deceased';
+  if (hasCategory(categories, [/Living Characters/i])) return 'Alive';
+
+  if (raw === '1') return 'Alive';
+  if (raw === '2') return 'Deceased';
+  if (raw === '3') return 'Unknown';
+
+  if (!raw) return null;
+
+  const lower = raw.toLowerCase();
+  if (lower.includes('deceased') || lower.includes('dead')) return 'Deceased';
+  if (lower.includes('alive') || lower.includes('living')) return 'Alive';
+
+  return raw;
+}
+
 function normaliseGender(value) {
   if (!value) return null;
 
@@ -164,22 +183,21 @@ function extractBountyFromText(value) {
   if (!value) return null;
 
   const text = String(value)
-    .replace(/\d{14}/g, '') // remove wiki timestamps like 20141206091723
+    .replace(/<s>|<\/s>|<strike>|<\/strike>/gi, '')
+    .replace(/\{\{Bounty\|([^}|]+).*?\}\}/gi, '$1')
+    .replace(/\{\{Beli\|([^}|]+).*?\}\}/gi, '$1')
+    .replace(/\{\{Berry\|([^}|]+).*?\}\}/gi, '$1')
+    .replace(/\d{14}/g, '')
     .replace(/\d{12}/g, '');
 
-  const berryMatches = [
-    ...text.matchAll(/(?:฿|Beli|Berries|Berry|\bbelly\b)[^\d]{0,20}(\d[\d,]{3,})/gi),
-    ...text.matchAll(/(\d[\d,]{3,})\s*(?:Beli|Berries|Berry|\bbelly\b)/gi),
-  ];
-
-  const numbers = berryMatches
-    .map((m) => Number(m[1].replaceAll(',', '')))
+  const matches = [...text.matchAll(/\d[\d,]{3,}/g)]
+    .map((m) => Number(m[0].replaceAll(',', '')))
     .filter((n) => Number.isFinite(n))
     .filter((n) => n >= 1000 && n < 10000000000);
 
-  if (!numbers.length) return null;
+  if (!matches.length) return null;
 
-  return Math.max(...numbers);
+  return Math.max(...matches);
 }
 
 function extractBounty(source, plain) {
@@ -420,9 +438,10 @@ async function getWikiData(title) {
     getInfoboxField(source, 'origin') ||
     cleanText(getRenderedStat(plain, 'ORIGIN'));
 
-  const status =
-    getInfoboxField(source, 'status') ||
-    cleanText(getRenderedStat(plain, 'STATUS'));
+  const status = normaliseStatus(
+    getInfoboxField(source, 'status') || getRenderedStat(plain, 'STATUS'),
+    categories
+  );
 
   const gender =
     normaliseGender(getInfoboxField(source, 'gender')) ||
