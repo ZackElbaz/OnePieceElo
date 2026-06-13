@@ -518,7 +518,28 @@ function Rankings() {
 
 function App() {
   const [page, setPage] = useState('vote');
-  return <><nav><button onClick={() => setPage('vote')}>Vote</button><button onClick={() => setPage('rankings')}>Rankings</button></nav>{page === 'vote' ? <VoteMode /> : <Rankings />}</>;
+
+  return (
+    <>
+      <nav>
+        <button
+          className={page === 'vote' ? 'active' : ''}
+          onClick={() => setPage('vote')}
+        >
+          Vote
+        </button>
+
+        <button
+          className={page === 'rankings' ? 'active' : ''}
+          onClick={() => setPage('rankings')}
+        >
+          Rankings
+        </button>
+      </nav>
+
+      {page === 'vote' ? <VoteMode /> : <Rankings />}
+    </>
+  );
 }
 
 createRoot(document.getElementById('root')).render(<App />);

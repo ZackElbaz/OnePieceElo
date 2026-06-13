@@ -518,6 +518,17 @@ dt{font-weight:700}
     0 0 20px rgba(96,165,250,0.25),
     inset 0 0 8px rgba(96,165,250,0.1);
 }
+
+nav .active{
+  background:#1e293b;
+  color:white;
+  border-color:#60a5fa;
+
+  box-shadow:
+    0 0 10px rgba(96,165,250,0.4),
+    0 0 20px rgba(96,165,250,0.25),
+    inset 0 0 8px rgba(96,165,250,0.1);
+}
 .wikiLink{
   display:inline-block;
   margin-top:12px;
