@@ -490,8 +490,8 @@ function Rankings() {
                   i
                 </button>
               </div>
-              <small>Score {formatScore(c.rating_score)} - {c.wins}W/{c.losses}L - +/-{formatScore(c.rating_sigma)}</small>
             </div>
+            <small className="rankScore">Score {formatScore(c.rating_score)}<br />{c.wins}W/{c.losses}L · +/-{formatScore(c.rating_sigma)}</small>
           </div>
         ))}
       </div>

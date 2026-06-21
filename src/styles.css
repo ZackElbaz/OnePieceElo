@@ -1225,3 +1225,107 @@ nav button:active,
     font-size:20px !important;
   }
 }
+
+/* Mobile readability pass: ranking score column and vote touch targets. */
+.rankRow{
+  grid-template-columns:44px 54px minmax(0,1fr) minmax(118px,auto);
+}
+
+.rankScore{
+  justify-self:end;
+  align-self:center;
+  color:#94a3b8;
+  font-size:18px;
+  font-weight:400;
+  line-height:1.25;
+  text-align:right;
+  white-space:nowrap;
+}
+
+@media (max-width: 768px), (orientation: portrait){
+  .votePage{
+    padding:74px 8px 8px !important;
+  }
+
+  .topBar h1{
+    font-size:18px !important;
+  }
+
+  .versus{
+    grid-template-rows:minmax(0,1fr) 96px minmax(0,1fr) !important;
+    gap:12px !important;
+  }
+
+  .card .info{
+    width:88px !important;
+    height:88px !important;
+    right:18px !important;
+    top:18px !important;
+    font-size:36px !important;
+    border-width:2px !important;
+  }
+
+  .vs,
+  .vs.confirm{
+    width:min(90vw,360px) !important;
+    height:84px !important;
+    font-size:30px !important;
+  }
+
+  .cardText{
+    padding:22px 18px !important;
+    background:linear-gradient(transparent,#020617 24%) !important;
+  }
+
+  .card h2{
+    font-size:clamp(34px,9vw,48px) !important;
+    line-height:1.02 !important;
+    margin:54px 0 12px !important;
+  }
+
+  .combatFacts{
+    gap:9px !important;
+  }
+
+  .combatFacts p{
+    font-size:clamp(17px,4.8vw,22px) !important;
+    line-height:1.18 !important;
+  }
+
+  .rankPage{
+    padding:82px 10px 24px !important;
+  }
+
+  .rankRow{
+    grid-template-columns:48px 86px minmax(0,1fr) minmax(112px,auto) !important;
+    gap:12px !important;
+    min-height:112px !important;
+    padding:14px 12px !important;
+  }
+
+  .rankNumber{
+    font-size:25px !important;
+  }
+
+  .rankRow img,
+  .rankAvatar{
+    width:86px !important;
+    height:86px !important;
+  }
+
+  .rankName{
+    font-size:22px !important;
+  }
+
+  .rankInfo{
+    width:50px !important;
+    height:50px !important;
+    font-size:21px !important;
+  }
+
+  .rankScore{
+    font-size:22px !important;
+    line-height:1.18 !important;
+    text-align:right !important;
+  }
+}
