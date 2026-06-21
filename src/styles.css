@@ -1065,14 +1065,24 @@ nav button:active,
 @media (orientation:portrait){
   .versus{
     grid-template-columns:1fr;
-    grid-template-rows:minmax(0,1fr) 58px minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr) 72px minmax(0,1fr);
     gap:8px;
   }
 
   .vs,
   .vs.confirm{
-    width:min(64vw,180px);
-    height:52px;
+    width:min(78vw,260px);
+    height:64px;
+    font-size:22px;
+  }
+
+  .card .info{
+    width:54px;
+    height:54px;
+    right:16px;
+    top:16px;
+    font-size:22px;
+    border-width:2px;
   }
 }
 
