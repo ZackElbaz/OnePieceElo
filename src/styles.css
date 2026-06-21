@@ -1375,3 +1375,37 @@ nav button:active,
     align-self:center !important;
   }
 }
+
+/* Mobile header readability for vote page and nav. */
+@media (max-width: 768px), (orientation: portrait){
+  nav{
+    gap:10px !important;
+    padding:8px !important;
+  }
+
+  nav button{
+    min-height:44px !important;
+    padding:9px 14px !important;
+    font-size:16px !important;
+  }
+
+  .votePage{
+    padding-top:96px !important;
+  }
+
+  .topBar{
+    min-height:64px !important;
+    gap:12px !important;
+  }
+
+  .topBar h1{
+    font-size:26px !important;
+    line-height:1.08 !important;
+  }
+
+  .topBar button{
+    min-height:52px !important;
+    padding:10px 18px !important;
+    font-size:20px !important;
+  }
+}
