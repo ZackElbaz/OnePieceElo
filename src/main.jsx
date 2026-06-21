@@ -383,7 +383,7 @@ function VoteMode({ user, onOpenAccount }) {
 
   return (
     <main className="votePage">
-      <header className="topBar"><h1>Who wins in a serious 1v1?</h1><button onClick={loadPair}>Skip</button></header>
+      <header className="topBar"><h1>Who wins in their prime?</h1><button onClick={loadPair}>Skip</button></header>
       {message && <p className="error">{message}</p>}
       {!user && (
         <button className="accountGate" onClick={onOpenAccount}>
@@ -652,7 +652,7 @@ function App() {
           className={accountOpen ? 'active' : ''}
           onClick={() => setAccountOpen(true)}
         >
-          {profile?.username || 'Account'}
+          Account
         </button>
       </nav>
 
