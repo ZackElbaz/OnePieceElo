@@ -333,7 +333,7 @@ function InfoModal({ character, onClose }) {
   );
 }
 
-function VoteMode({ user }) {
+function VoteMode({ user, onOpenAccount }) {
   const [pair, setPair] = useState(null);
   const [modalCharacter, setModalCharacter] = useState(null);
   const [message, setMessage] = useState('');
@@ -358,6 +358,11 @@ function VoteMode({ user }) {
   const right = pair?.right_character;
 
   async function vote() {
+    if (!user) {
+      onOpenAccount();
+      return;
+    }
+
     const winner = selectedSide === 'left' ? left : right;
     const loser = selectedSide === 'left' ? right : left;
     if (!winner || !loser || submitting) return;
@@ -380,12 +385,17 @@ function VoteMode({ user }) {
     <main className="votePage">
       <header className="topBar"><h1>Who wins in a serious 1v1?</h1><button onClick={loadPair}>Skip</button></header>
       {message && <p className="error">{message}</p>}
+      {!user && (
+        <button className="accountGate" onClick={onOpenAccount}>
+          Create an account to vote
+        </button>
+      )}
       <section className="versus">
         <CharacterCard
           character={left}
           side="left"
           selectedState={selectedSide === 'left' ? 'selected' : selectedSide ? 'dimmed' : ''}
-          onSelect={() => setSelectedSide('left')}
+          onSelect={() => user ? setSelectedSide('left') : onOpenAccount()}
           onInfo={setModalCharacter}
         />
         <button className={`vs ${selectedSide ? 'confirm' : ''}`} onClick={vote} disabled={!selectedSide || submitting}>
@@ -395,7 +405,7 @@ function VoteMode({ user }) {
           character={right}
           side="right"
           selectedState={selectedSide === 'right' ? 'selected' : selectedSide ? 'dimmed' : ''}
-          onSelect={() => setSelectedSide('right')}
+          onSelect={() => user ? setSelectedSide('right') : onOpenAccount()}
           onInfo={setModalCharacter}
         />
       </section>
@@ -494,8 +504,9 @@ function Rankings() {
   );
 }
 
-function AccountModal({ user, onClose }) {
+function AccountModal({ user, profile, onClose }) {
   const [mode, setMode] = useState('signin');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -505,9 +516,23 @@ function AccountModal({ user, onClose }) {
     event.preventDefault();
     setBusy(true);
     setMessage('');
+    const cleanUsername = username.trim();
+
+    if (mode === 'signup' && cleanUsername.length < 3) {
+      setBusy(false);
+      setMessage('Choose a username with at least 3 characters.');
+      return;
+    }
 
     const authCall = mode === 'signup'
-      ? supabase.auth.signUp({ email, password })
+      ? supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username: cleanUsername },
+            emailRedirectTo: window.location.origin,
+          },
+        })
       : supabase.auth.signInWithPassword({ email, password });
 
     const { error } = await authCall;
@@ -537,7 +562,8 @@ function AccountModal({ user, onClose }) {
 
         {user ? (
           <div className="accountPanel">
-            <p className="modalBio">{user.email}</p>
+            <p className="modalBio">{profile?.username || user.user_metadata?.username || user.email}</p>
+            <p className="muted">{user.email}</p>
             <button className="accountSubmit" onClick={signOut} disabled={busy}>Sign out</button>
           </div>
         ) : (
@@ -548,6 +574,13 @@ function AccountModal({ user, onClose }) {
             </div>
 
             <form className="accountForm" onSubmit={submit}>
+              {mode === 'signup' && (
+                <label>
+                  Username
+                  <input value={username} onChange={(event) => setUsername(event.target.value)} minLength="3" maxLength="24" required />
+                </label>
+              )}
+
               <label>
                 Email
                 <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required />
@@ -572,6 +605,7 @@ function AccountModal({ user, onClose }) {
 function App() {
   const [page, setPage] = useState('vote');
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [accountOpen, setAccountOpen] = useState(false);
 
   useEffect(() => {
@@ -584,6 +618,20 @@ function App() {
   }, []);
 
   const user = session?.user || null;
+
+  useEffect(() => {
+    if (!user?.id) {
+      setProfile(null);
+      return;
+    }
+
+    supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => setProfile(data || null));
+  }, [user?.id]);
 
   return (
     <>
@@ -603,15 +651,15 @@ function App() {
         </button>
 
         <button
-          className={user ? 'active' : ''}
+          className={accountOpen ? 'active' : ''}
           onClick={() => setAccountOpen(true)}
         >
-          Account
+          {profile?.username || 'Account'}
         </button>
       </nav>
 
-      {page === 'vote' ? <VoteMode user={user} /> : <Rankings />}
-      {accountOpen && <AccountModal user={user} onClose={() => setAccountOpen(false)} />}
+      {page === 'vote' ? <VoteMode user={user} onOpenAccount={() => setAccountOpen(true)} /> : <Rankings />}
+      {accountOpen && <AccountModal user={user} profile={profile} onClose={() => setAccountOpen(false)} />}
     </>
   );
 }
