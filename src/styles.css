@@ -1143,3 +1143,85 @@ nav button:active,
   opacity:0.65;
   cursor:wait;
 }
+
+@media (max-width: 768px), (orientation: portrait){
+  .card .info{
+    width:72px !important;
+    height:72px !important;
+    right:18px !important;
+    top:18px !important;
+    font-size:30px !important;
+    border-width:2px !important;
+    box-shadow:0 0 18px rgba(147,197,253,0.32) !important;
+  }
+
+  .versus{
+    grid-template-rows:minmax(0,1fr) 86px minmax(0,1fr) !important;
+  }
+
+  .vs,
+  .vs.confirm{
+    width:min(86vw,340px) !important;
+    height:76px !important;
+    font-size:26px !important;
+  }
+
+  .rankPage{
+    padding:82px 10px 24px !important;
+  }
+
+  .filters{
+    gap:7px !important;
+    margin:14px 0 !important;
+  }
+
+  .filters button{
+    min-height:42px !important;
+    padding:8px 12px !important;
+    font-size:14px !important;
+  }
+
+  .rankList{
+    gap:12px !important;
+  }
+
+  .rankRow{
+    grid-template-columns:48px 82px minmax(0,1fr) !important;
+    gap:13px !important;
+    min-height:104px !important;
+    padding:14px 12px !important;
+    border-radius:18px !important;
+  }
+
+  .rankNumber{
+    font-size:24px !important;
+  }
+
+  .rankRow img,
+  .rankAvatar{
+    width:82px !important;
+    height:82px !important;
+    border-radius:16px !important;
+  }
+
+  .rankName{
+    font-size:22px !important;
+    line-height:1.1 !important;
+  }
+
+  .rankNameBlock{
+    gap:8px !important;
+  }
+
+  .rankNameBlock small{
+    font-size:14px !important;
+    white-space:normal !important;
+    line-height:1.25 !important;
+  }
+
+  .rankInfo{
+    width:48px !important;
+    height:48px !important;
+    font-size:20px !important;
+  }
+}
