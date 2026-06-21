@@ -415,7 +415,6 @@ function VoteMode({ user, onOpenAccount }) {
 }
 
 const FILTERS = [
-  ['all', 'All'],
   ['alive', 'Alive'],
   ['swordsman', 'Swordsmen'],
   ['devil_fruit_user', 'Devil Fruit'],
@@ -428,7 +427,8 @@ const FILTERS = [
 ];
 
 function Rankings() {
-  const [filter, setFilter] = useState('all');
+  const [filters, setFilters] = useState([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [rows, setRows] = useState([]);
   const [modalCharacter, setModalCharacter] = useState(null);
 
@@ -439,33 +439,47 @@ function Rankings() {
       .order('rating_score', { ascending: false })
       .limit(500);
 
-    if (filter === 'alive') q = q.eq('status', 'Alive');
-    if (filter === 'swordsman') q = q.eq('swordsman', true);
-    if (filter === 'devil_fruit_user') q = q.eq('devil_fruit_user', true);
-    if (filter === 'paramecia') q = q.eq('devil_fruit_type', 'Paramecia');
-    if (filter === 'logia') q = q.eq('devil_fruit_type', 'Logia');
-    if (filter === 'zoan') q = q.ilike('devil_fruit_type', '%Zoan%');
-    if (filter === 'haki_user') q = q.eq('haki_user', true);
-    if (filter === 'female') q = q.ilike('gender', 'Female');
-    if (filter === 'male') q = q.ilike('gender', 'Male');
+    if (filters.includes('alive')) q = q.eq('status', 'Alive');
+    if (filters.includes('swordsman')) q = q.eq('swordsman', true);
+    if (filters.includes('devil_fruit_user')) q = q.eq('devil_fruit_user', true);
+    if (filters.includes('paramecia')) q = q.eq('devil_fruit_type', 'Paramecia');
+    if (filters.includes('logia')) q = q.eq('devil_fruit_type', 'Logia');
+    if (filters.includes('zoan')) q = q.ilike('devil_fruit_type', '%Zoan%');
+    if (filters.includes('haki_user')) q = q.eq('haki_user', true);
+    if (filters.includes('female')) q = q.ilike('gender', 'Female');
+    if (filters.includes('male')) q = q.ilike('gender', 'Male');
 
     q.then(({ data }) => setRows(data || []));
-  }, [filter]);
+  }, [filters]);
+
+  function toggleFilter(id) {
+    setFilters(current => current.includes(id)
+      ? current.filter(item => item !== id)
+      : [...current, id]);
+  }
 
   return (
     <main className="rankPage">
       <h1>Live Strength Ranking</h1>
 
-      <div className="filters">
-        {FILTERS.map(([id, label]) => (
-          <button
-            className={filter === id ? 'active' : ''}
-            onClick={() => setFilter(id)}
-            key={id}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="filterMenuWrap">
+        <button className={`filterMenuButton ${filtersOpen ? 'active' : ''}`} onClick={() => setFiltersOpen(open => !open)}>
+          Filters{filters.length ? ` (${filters.length})` : ''}
+        </button>
+        {filtersOpen && (
+          <div className="filterMenu">
+            <label className="filterOption">
+              <input type="checkbox" checked={!filters.length} onChange={() => setFilters([])} />
+              All characters
+            </label>
+            {FILTERS.map(([id, label]) => (
+              <label className="filterOption" key={id}>
+                <input type="checkbox" checked={filters.includes(id)} onChange={() => toggleFilter(id)} />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rankList">
@@ -502,7 +516,7 @@ function Rankings() {
   );
 }
 
-function AccountModal({ user, profile, onClose }) {
+function AccountModal({ user, profile, onClose, onOpenStats }) {
   const [mode, setMode] = useState('signin');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -560,8 +574,9 @@ function AccountModal({ user, profile, onClose }) {
 
         {user ? (
           <div className="accountPanel">
-            <p className="modalBio">{profile?.username || user.user_metadata?.username || user.email}</p>
-            <p className="muted">{user.email}</p>
+            <p className="modalBio"><strong>Username:</strong> {profile?.username || user.user_metadata?.username || 'Unknown'}</p>
+            <p className="muted"><strong>Email:</strong> {user.email}</p>
+            <button className="accountSubmit" onClick={onOpenStats}>Stats</button>
             <button className="accountSubmit" onClick={signOut} disabled={busy}>Sign out</button>
           </div>
         ) : (
@@ -597,6 +612,79 @@ function AccountModal({ user, profile, onClose }) {
         {message && <p className="error">{message}</p>}
       </div>
     </div>
+  );
+}
+
+function AccountStats({ user, profile, onBack }) {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const voterKey = getVoterKey(user);
+
+    Promise.all([
+      supabase
+        .from('voter_reliability')
+        .select('*')
+        .eq('voter_key', voterKey)
+        .maybeSingle(),
+      supabase
+        .from('votes')
+        .select('id,created_at,winner_expected_probability', { count: 'exact' })
+        .eq('voter_session_id', voterKey)
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ]).then(([reliabilityResult, votesResult]) => {
+      setStats({
+        reliability: reliabilityResult.data,
+        voteCount: votesResult.count || 0,
+        lastVoteAt: votesResult.data?.[0]?.created_at || null,
+      });
+    });
+  }, [user?.id]);
+
+  if (!user) {
+    return (
+      <main className="rankPage statsPage">
+        <h1>Account Stats</h1>
+        <button className="accountSubmit" onClick={onBack}>Sign in</button>
+      </main>
+    );
+  }
+
+  const reliability = stats?.reliability;
+
+  return (
+    <main className="rankPage statsPage">
+      <h1>Account Stats</h1>
+      <div className="statsCards">
+        <div className="statsCard">
+          <span>Username</span>
+          <strong>{profile?.username || user.user_metadata?.username || 'Unknown'}</strong>
+        </div>
+        <div className="statsCard">
+          <span>Email</span>
+          <strong>{user.email}</strong>
+        </div>
+        <div className="statsCard">
+          <span>Votes</span>
+          <strong>{stats?.voteCount ?? '...'}</strong>
+        </div>
+        <div className="statsCard">
+          <span>Reliability</span>
+          <strong>{reliability ? `${Math.round(Number(reliability.reliability) * 100)}%` : '100%'}</strong>
+        </div>
+        <div className="statsCard">
+          <span>Quick votes</span>
+          <strong>{reliability?.quick_votes ?? 0}</strong>
+        </div>
+        <div className="statsCard">
+          <span>Outlier votes</span>
+          <strong>{reliability?.outlier_votes ?? 0}</strong>
+        </div>
+      </div>
+      <button className="accountSubmit" onClick={onBack}>Back to vote</button>
+    </main>
   );
 }
 
@@ -649,15 +737,27 @@ function App() {
         </button>
 
         <button
-          className={accountOpen ? 'active' : ''}
+          className={accountOpen || page === 'stats' ? 'active' : ''}
           onClick={() => setAccountOpen(true)}
         >
           Account
         </button>
       </nav>
 
-      {page === 'vote' ? <VoteMode user={user} onOpenAccount={() => setAccountOpen(true)} /> : <Rankings />}
-      {accountOpen && <AccountModal user={user} profile={profile} onClose={() => setAccountOpen(false)} />}
+      {page === 'vote' && <VoteMode user={user} onOpenAccount={() => setAccountOpen(true)} />}
+      {page === 'rankings' && <Rankings />}
+      {page === 'stats' && <AccountStats user={user} profile={profile} onBack={() => setPage('vote')} />}
+      {accountOpen && (
+        <AccountModal
+          user={user}
+          profile={profile}
+          onClose={() => setAccountOpen(false)}
+          onOpenStats={() => {
+            setAccountOpen(false);
+            setPage('stats');
+          }}
+        />
+      )}
     </>
   );
 }
