@@ -480,18 +480,16 @@ function Rankings() {
             )}
 
             <div className="rankNameBlock">
-              <div className="rankNameLine">
-                <span className="rankName">{c.name}</span>
-                <button
-                  className="rankInfo"
-                  onClick={() => setModalCharacter(c)}
-                  aria-label={`Info about ${c.name}`}
-                >
-                  i
-                </button>
-              </div>
+              <span className="rankName">{c.name}</span>
+              <small className="rankScore">Score {formatScore(c.rating_score)} · {c.wins}W/{c.losses}L · +/-{formatScore(c.rating_sigma)}</small>
             </div>
-            <small className="rankScore">Score {formatScore(c.rating_score)}<br />{c.wins}W/{c.losses}L · +/-{formatScore(c.rating_sigma)}</small>
+            <button
+              className="rankInfo"
+              onClick={() => setModalCharacter(c)}
+              aria-label={`Info about ${c.name}`}
+            >
+              i
+            </button>
           </div>
         ))}
       </div>

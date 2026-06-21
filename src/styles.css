@@ -1329,3 +1329,49 @@ nav button:active,
     text-align:right !important;
   }
 }
+
+/* Ranking row correction: score under name, info button at far right. */
+.rankRow{
+  grid-template-columns:44px 54px minmax(0,1fr) 54px;
+}
+
+.rankNameBlock{
+  min-width:0;
+}
+
+.rankScore{
+  display:block;
+  color:#94a3b8;
+  font-weight:400;
+  text-align:left;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.rankRow > .rankInfo{
+  justify-self:end;
+  align-self:center;
+}
+
+@media (max-width: 768px), (orientation: portrait){
+  .rankRow{
+    grid-template-columns:48px 86px minmax(0,1fr) 58px !important;
+  }
+
+  .rankNameBlock{
+    gap:6px !important;
+  }
+
+  .rankScore{
+    font-size:22px !important;
+    line-height:1.18 !important;
+    text-align:left !important;
+    white-space:nowrap !important;
+  }
+
+  .rankRow > .rankInfo{
+    justify-self:end !important;
+    align-self:center !important;
+  }
+}
