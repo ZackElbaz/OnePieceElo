@@ -1827,3 +1827,124 @@ nav button:active,
     font-size:26px !important;
   }
 }
+
+/* Final portrait tightening for older phones after the viewport fix. */
+.timelineChart .axisLabel{
+  fill:#9fb8d8;
+  font-size:10px;
+  font-weight:700;
+}
+
+.timelineChart .axisTitle{
+  fill:#7ea6d9;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:0;
+}
+
+@media (max-width: 768px), (orientation: portrait){
+  .votePage{
+    padding:68px 6px 6px !important;
+  }
+
+  .topBar{
+    min-height:46px !important;
+    gap:6px !important;
+    padding:6px 8px !important;
+  }
+
+  .topBar h1{
+    font-size:18px !important;
+    line-height:1.1 !important;
+  }
+
+  .topBar button,
+  nav button{
+    min-height:40px !important;
+    padding:7px 12px !important;
+    font-size:16px !important;
+  }
+
+  .versus{
+    grid-template-rows:minmax(0, 1fr) 54px minmax(0, 1fr) !important;
+    gap:5px !important;
+    padding-top:2px !important;
+  }
+
+  .vs,
+  .vs.confirm{
+    width:min(62vw, 210px) !important;
+    height:46px !important;
+    min-height:46px !important;
+    font-size:18px !important;
+  }
+
+  .card{
+    border-radius:12px !important;
+  }
+
+  .cardText{
+    padding:10px 12px 12px !important;
+    background:linear-gradient(transparent,#020617 68%) !important;
+  }
+
+  .card h2{
+    margin:28px 0 0 !important;
+    font-size:clamp(23px, 6vw, 31px) !important;
+    line-height:1.03 !important;
+  }
+
+  .combatFacts{
+    display:none !important;
+  }
+
+  .card .info{
+    width:56px !important;
+    height:56px !important;
+    font-size:24px !important;
+    top:10px !important;
+    right:10px !important;
+  }
+
+  .rankRow{
+    min-height:74px !important;
+    padding:8px 8px !important;
+  }
+
+  .rankRow img{
+    width:52px !important;
+    height:58px !important;
+  }
+
+  .rankName{
+    font-size:18px !important;
+    line-height:1.12 !important;
+  }
+
+  .rankMeta{
+    font-size:12px !important;
+    line-height:1.2 !important;
+  }
+
+  .rankRow > .rankInfo{
+    width:54px !important;
+    height:54px !important;
+    min-height:54px !important;
+    font-size:23px !important;
+  }
+
+  .filterMenuButton{
+    min-height:42px !important;
+    padding:8px 14px !important;
+    font-size:16px !important;
+  }
+
+  .filterOption{
+    min-height:42px !important;
+    font-size:16px !important;
+  }
+
+  .timelineChart svg{
+    height:190px !important;
+  }
+}

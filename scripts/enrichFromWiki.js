@@ -653,6 +653,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { htmlToText } from 'html-to-text';
+import { cacheCharacterImage } from './lib/imageCache.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -1803,7 +1804,20 @@ async function main() {
         tags: wikiData.tags || [],
       };
 
-      if (wikiData.image_url) update.image_url = wikiData.image_url;
+      if (wikiData.image_url) {
+        try {
+          update.image_url = await cacheCharacterImage({
+            supabase,
+            characterId: character.id,
+            name: character.name,
+            imageUrl: wikiData.image_url,
+            updateCharacter: false,
+          });
+        } catch (cacheError) {
+          console.warn(`Image cache warning for ${title}:`, cacheError.message);
+          update.image_url = wikiData.image_url;
+        }
+      }
       if (wikiData.description) update.description = wikiData.description;
 
       const { error: updateError } = await supabase

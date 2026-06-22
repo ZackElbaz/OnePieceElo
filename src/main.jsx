@@ -124,6 +124,30 @@ function CharacterCard({ character, side, selectedState, onSelect, onInfo }) {
 }
 
 function TimelineChart({ history, mode }) {
+  const axis = useMemo(() => {
+    if (!history.length) return null;
+
+    const values = history.map(row => Number(mode === 'rank' ? row.rank_position : row.rating_score));
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+
+    if (mode === 'rank') {
+      return {
+        top: `#${Math.round(minValue)}`,
+        middle: `#${Math.round((minValue + maxValue) / 2)}`,
+        bottom: `#${Math.round(maxValue)}`,
+        title: 'Rank',
+      };
+    }
+
+    return {
+      top: formatScore(maxValue),
+      middle: formatScore((minValue + maxValue) / 2),
+      bottom: formatScore(minValue),
+      title: 'Score',
+    };
+  }, [history, mode]);
+
   const points = useMemo(() => {
     if (!history.length) return [];
 
@@ -138,7 +162,7 @@ function TimelineChart({ history, mode }) {
 
     return history.map((row, index) => {
       const value = values[index];
-      const x = 24 + ((dates[index] - minDate) / rangeDate) * 252;
+      const x = 44 + ((dates[index] - minDate) / rangeDate) * 232;
       const normalized = (value - minValue) / rangeValue;
       const y = mode === 'rank' ? 18 + normalized * 104 : 122 - normalized * 104;
       return { x, y, row };
@@ -156,8 +180,16 @@ function TimelineChart({ history, mode }) {
   return (
     <div className="timelineChart">
       <svg viewBox="0 0 300 150" role="img" aria-label={`${mode === 'rank' ? 'Rank' : 'Rating score'} history`}>
-        <line x1="24" y1="18" x2="24" y2="122" />
-        <line x1="24" y1="122" x2="276" y2="122" />
+        <line x1="44" y1="18" x2="44" y2="122" />
+        <line x1="44" y1="122" x2="276" y2="122" />
+        {axis && (
+          <>
+            <text className="axisLabel" x="39" y="21" textAnchor="end">{axis.top}</text>
+            <text className="axisLabel" x="39" y="73" textAnchor="end">{axis.middle}</text>
+            <text className="axisLabel" x="39" y="125" textAnchor="end">{axis.bottom}</text>
+            <text className="axisTitle" x="12" y="75" textAnchor="middle" transform="rotate(-90 12 75)">{axis.title}</text>
+          </>
+        )}
         <path d={path} />
         {points.map((point, index) => (
           <circle key={`${point.row.created_at}-${index}`} cx={point.x} cy={point.y} r="3.5" />

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { htmlToText } from 'html-to-text';
+import { cacheCharacterImage } from './lib/imageCache.js';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -258,13 +259,28 @@ async function main() {
         last_synced_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { data: savedCharacter, error } = await supabase
         .from('characters')
-        .upsert(row, { onConflict: 'wiki_title' });
+        .upsert(row, { onConflict: 'wiki_title' })
+        .select('id,name,image_url')
+        .single();
 
       if (error) {
         console.error('Supabase error:', title, error.message);
       } else {
+        if (savedCharacter?.image_url) {
+          try {
+            await cacheCharacterImage({
+              supabase,
+              characterId: savedCharacter.id,
+              name: savedCharacter.name,
+              imageUrl: savedCharacter.image_url,
+            });
+          } catch (cacheError) {
+            console.warn('Image cache warning:', title, cacheError.message);
+          }
+        }
+
         console.log('Synced:', title);
       }
 

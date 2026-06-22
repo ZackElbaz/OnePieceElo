@@ -1,1 +1,21 @@
-{"scripts":{"dev":"vite","build":"vite build","preview":"vite preview","sync:wiki":"node scripts/syncWiki.js","enrich:wiki": "node scripts/enrichFromWiki.js"},"dependencies":{"@supabase/supabase-js":"latest","@vitejs/plugin-react":"latest","dotenv":"^17.4.2","html-to-text":"latest","react":"latest","react-dom":"latest","vite":"latest"}}
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sync:wiki": "node scripts/syncWiki.js",
+    "enrich:wiki": "node scripts/enrichFromWiki.js",
+    "cache:images": "node scripts/cacheCharacterImages.js",
+    "add:characters": "npm run seed:curated && npm run enrich:wiki",
+    "seed:curated": "node scripts/seedCuratedCharacters.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "latest",
+    "@vitejs/plugin-react": "latest",
+    "dotenv": "^17.4.2",
+    "html-to-text": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest"
+  }
+}
