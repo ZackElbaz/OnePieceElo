@@ -162,7 +162,7 @@ function TimelineChart({ history, mode }) {
 
     return history.map((row, index) => {
       const value = values[index];
-      const x = 44 + ((dates[index] - minDate) / rangeDate) * 232;
+      const x = 60 + ((dates[index] - minDate) / rangeDate) * 216;
       const normalized = (value - minValue) / rangeValue;
       const y = mode === 'rank' ? 18 + normalized * 104 : 122 - normalized * 104;
       return { x, y, row };
@@ -180,14 +180,13 @@ function TimelineChart({ history, mode }) {
   return (
     <div className="timelineChart">
       <svg viewBox="0 0 300 150" role="img" aria-label={`${mode === 'rank' ? 'Rank' : 'Rating score'} history`}>
-        <line x1="44" y1="18" x2="44" y2="122" />
-        <line x1="44" y1="122" x2="276" y2="122" />
+        <line x1="60" y1="18" x2="60" y2="122" />
+        <line x1="60" y1="122" x2="276" y2="122" />
         {axis && (
           <>
-            <text className="axisLabel" x="39" y="21" textAnchor="end">{axis.top}</text>
-            <text className="axisLabel" x="39" y="73" textAnchor="end">{axis.middle}</text>
-            <text className="axisLabel" x="39" y="125" textAnchor="end">{axis.bottom}</text>
-            <text className="axisTitle" x="12" y="75" textAnchor="middle" transform="rotate(-90 12 75)">{axis.title}</text>
+            <text className="axisLabel" x="54" y="21" textAnchor="end">{axis.top}</text>
+            <text className="axisLabel" x="54" y="73" textAnchor="end">{axis.middle}</text>
+            <text className="axisLabel" x="54" y="125" textAnchor="end">{axis.bottom}</text>
           </>
         )}
         <path d={path} />
@@ -448,6 +447,7 @@ function VoteMode({ user, onOpenAccount }) {
 
 const FILTERS = [
   ['alive', 'Alive'],
+  ['dead', 'Dead'],
   ['swordsman', 'Swordsmen'],
   ['devil_fruit_user', 'Devil Fruit'],
   ['paramecia', 'Paramecia'],
@@ -471,7 +471,11 @@ function Rankings() {
       .order('rating_score', { ascending: false })
       .limit(500);
 
-    if (filters.includes('alive')) q = q.eq('status', 'Alive');
+    const showAlive = filters.includes('alive');
+    const showDead = filters.includes('dead');
+    if (showAlive && showDead) q = q.in('status', ['Alive', 'Deceased']);
+    else if (showAlive) q = q.eq('status', 'Alive');
+    else if (showDead) q = q.eq('status', 'Deceased');
     if (filters.includes('swordsman')) q = q.eq('swordsman', true);
     if (filters.includes('devil_fruit_user')) q = q.eq('devil_fruit_user', true);
     if (filters.includes('paramecia')) q = q.eq('devil_fruit_type', 'Paramecia');

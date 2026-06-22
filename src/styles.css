@@ -1948,3 +1948,97 @@ nav button:active,
     height:190px !important;
   }
 }
+
+/* Stable mobile ranking rows and scrollable stats page. */
+.statsPage{
+  min-height:100dvh;
+  overflow-y:auto;
+}
+
+@media (max-width: 768px), (orientation: portrait){
+  .rankPage{
+    overflow-y:auto;
+  }
+
+  .rankList{
+    display:grid;
+    gap:8px !important;
+  }
+
+  .rankRow{
+    display:grid !important;
+    grid-template-columns:42px 60px minmax(0, 1fr) 54px !important;
+    align-items:center !important;
+    gap:10px !important;
+    min-height:86px !important;
+    height:auto !important;
+    padding:8px 8px !important;
+    overflow:hidden !important;
+  }
+
+  .rankNumber{
+    justify-self:center !important;
+    align-self:center !important;
+    font-size:28px !important;
+    line-height:1 !important;
+  }
+
+  .rankRow img,
+  .rankAvatar{
+    justify-self:center !important;
+    align-self:center !important;
+    width:56px !important;
+    height:64px !important;
+    object-fit:cover !important;
+    border-radius:8px !important;
+    margin:0 !important;
+  }
+
+  .rankNameBlock{
+    min-width:0 !important;
+    height:auto !important;
+    align-self:center !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    gap:4px !important;
+    overflow:hidden !important;
+    transform:none !important;
+    margin:0 !important;
+  }
+
+  .rankName{
+    display:block !important;
+    color:white !important;
+    font-size:18px !important;
+    line-height:1.12 !important;
+    font-weight:800 !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  .rankNameBlock small,
+  .rankScore{
+    display:block !important;
+    color:#aebbd0 !important;
+    font-size:12px !important;
+    line-height:1.18 !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  .rankRow > .rankInfo{
+    justify-self:center !important;
+    align-self:center !important;
+    width:50px !important;
+    height:50px !important;
+    min-height:50px !important;
+    font-size:22px !important;
+    border-radius:999px !important;
+    margin:0 !important;
+  }
+
+  .timelineChart .axisLabel{
+    font-size:9px !important;
+  }
+}
