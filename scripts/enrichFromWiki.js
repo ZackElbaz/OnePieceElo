@@ -1739,6 +1739,7 @@ async function main() {
       wiki_url,
       needs_enrichment
     `)
+    .eq('needs_enrichment', true)
     .order('name');
 
   if (debugTitle) {
@@ -1765,6 +1766,15 @@ async function main() {
     const title = decodeURIComponent(character.wiki_title || character.name);
 
     try {
+      if (character.name === 'Eiichiro Oda' || title === 'Eiichiro_Oda') {
+        await supabase
+          .from('characters')
+          .update({ active: true, needs_enrichment: false })
+          .eq('id', character.id);
+        console.log('Skipped custom character: Eiichiro Oda');
+        continue;
+      }
+
       console.log(`Fetching ${title}`);
 
       const wikiData = await getWikiData(title);
