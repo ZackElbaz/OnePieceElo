@@ -329,7 +329,7 @@ create index if not exists rating_history_character_rank_idx
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  username text unique not null check (char_length(username) between 3 and 24),
+  username text unique not null check (char_length(username) between 3 and 15),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -342,12 +342,12 @@ as $$
 declare
   requested_username text;
 begin
-  requested_username := nullif(trim(new.raw_user_meta_data->>'username'), '');
+  requested_username := left(nullif(trim(new.raw_user_meta_data->>'username'), ''), 15);
 
   insert into public.profiles(id, username)
   values(
     new.id,
-    coalesce(requested_username, 'user_' || replace(new.id::text, '-', '')::text)
+    coalesce(requested_username, left('user_' || replace(new.id::text, '-', '')::text, 15))
   )
   on conflict (id) do nothing;
 

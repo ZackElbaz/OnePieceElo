@@ -1144,6 +1144,37 @@ nav button:active,
   cursor:wait;
 }
 
+.accountPage{
+  overflow-y:auto;
+}
+
+.accountTabs{
+  margin:14px 0 18px;
+}
+
+.signOutPanel{
+  display:grid;
+  gap:14px;
+  max-width:520px;
+  background:#111827;
+  border:1px solid #263247;
+  border-radius:14px;
+  padding:16px;
+}
+
+.signOutActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.accountSubmit.danger{
+  border-color:#fca5a5;
+  box-shadow:
+    0 0 12px rgba(239,68,68,0.28),
+    inset 0 0 8px rgba(239,68,68,0.08);
+}
+
 .friendInviteForm{
   display:flex;
   gap:10px;

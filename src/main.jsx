@@ -739,9 +739,9 @@ function AccountModal({ user, profile, onClose, onOpenStats, onOpenFriends }) {
     setMessage('');
     const cleanUsername = username.trim();
 
-    if (mode === 'signup' && cleanUsername.length < 3) {
+    if (mode === 'signup' && (cleanUsername.length < 3 || cleanUsername.length > 15)) {
       setBusy(false);
-      setMessage('Choose a username with at least 3 characters.');
+      setMessage('Choose a username between 3 and 15 characters.');
       return;
     }
 
@@ -800,7 +800,7 @@ function AccountModal({ user, profile, onClose, onOpenStats, onOpenFriends }) {
               {mode === 'signup' && (
                 <label>
                   Username
-                  <input value={username} onChange={(event) => setUsername(event.target.value)} minLength="3" maxLength="24" required />
+                  <input value={username} onChange={(event) => setUsername(event.target.value)} minLength="3" maxLength="15" required />
                 </label>
               )}
 
@@ -825,7 +825,7 @@ function AccountModal({ user, profile, onClose, onOpenStats, onOpenFriends }) {
   );
 }
 
-function AccountStats({ user, profile, onBack }) {
+function AccountStats({ user, profile, onBack, embedded = false }) {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -864,9 +864,8 @@ function AccountStats({ user, profile, onBack }) {
 
   const reliability = stats?.reliability;
 
-  return (
-    <main className="rankPage statsPage">
-      <h1>Account Stats</h1>
+  const content = (
+    <>
       <div className="statsCards">
         <div className="statsCard">
           <span>Username</span>
@@ -893,12 +892,21 @@ function AccountStats({ user, profile, onBack }) {
           <strong>{reliability?.outlier_votes ?? 0}</strong>
         </div>
       </div>
-      <button className="accountSubmit" onClick={onBack}>Back to vote</button>
+      {!embedded && <button className="accountSubmit" onClick={onBack}>Back to vote</button>}
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <main className="rankPage statsPage">
+      <h1>Account Stats</h1>
+      {content}
     </main>
   );
 }
 
-function FriendsPage({ user, profile, onBack }) {
+function FriendsPage({ user, profile, onBack, embedded = false }) {
   const [inviteUsername, setInviteUsername] = useState('');
   const [requests, setRequests] = useState([]);
   const [friendRows, setFriendRows] = useState([]);
@@ -1040,10 +1048,8 @@ function FriendsPage({ user, profile, onBack }) {
 
   const incoming = requests.filter(row => row.status === 'pending' && row.addressee_id === user.id);
 
-  return (
-    <main className="rankPage statsPage friendsPage">
-      <h1>Friends</h1>
-
+  const content = (
+    <>
       <form className="friendInviteForm" onSubmit={sendInvite}>
         <input
           value={inviteUsername}
@@ -1084,7 +1090,74 @@ function FriendsPage({ user, profile, onBack }) {
         </div>
       </section>
 
-      <button className="accountSubmit" onClick={onBack}>Back to vote</button>
+      {!embedded && <button className="accountSubmit" onClick={onBack}>Back to vote</button>}
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <main className="rankPage statsPage friendsPage">
+      <h1>Friends</h1>
+      {content}
+    </main>
+  );
+}
+
+function AccountPage({ user, profile, onOpenSignIn, onBack }) {
+  const [tab, setTab] = useState('stats');
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) onOpenSignIn();
+  }, [user?.id]);
+
+  async function signOut() {
+    setBusy(true);
+    await supabase.auth.signOut();
+    setBusy(false);
+    setConfirmSignOut(false);
+    onBack();
+  }
+
+  if (!user) {
+    return (
+      <main className="rankPage statsPage accountPage">
+        <h1>Account</h1>
+        <button className="accountSubmit" onClick={onOpenSignIn}>Sign in</button>
+      </main>
+    );
+  }
+
+  return (
+    <main className="rankPage statsPage accountPage">
+      <h1>Account</h1>
+      <div className="modalTabs accountTabs">
+        <button className={tab === 'stats' ? 'active' : ''} onClick={() => setTab('stats')}>Personal Stats</button>
+        <button className={tab === 'friends' ? 'active' : ''} onClick={() => setTab('friends')}>Friends</button>
+        <button className={tab === 'signout' ? 'active' : ''} onClick={() => setTab('signout')}>Sign Out</button>
+      </div>
+
+      {tab === 'stats' && <AccountStats user={user} profile={profile} onBack={onBack} embedded />}
+      {tab === 'friends' && <FriendsPage user={user} profile={profile} onBack={onBack} embedded />}
+      {tab === 'signout' && (
+        <section className="signOutPanel">
+          <p className="modalBio">Are you sure you want to sign out?</p>
+          <div className="signOutActions">
+            {!confirmSignOut ? (
+              <button className="accountSubmit danger" onClick={() => setConfirmSignOut(true)}>Sign out</button>
+            ) : (
+              <>
+                <button className="accountSubmit danger" onClick={signOut} disabled={busy}>
+                  {busy ? 'Signing out' : 'Yes, sign out'}
+                </button>
+                <button className="accountSubmit" onClick={() => setConfirmSignOut(false)} disabled={busy}>Cancel</button>
+              </>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
@@ -1138,8 +1211,8 @@ function App() {
         </button>
 
         <button
-          className={accountOpen || page === 'stats' || page === 'friends' ? 'active' : ''}
-          onClick={() => setAccountOpen(true)}
+          className={accountOpen || page === 'account' ? 'active' : ''}
+          onClick={() => user ? setPage('account') : setAccountOpen(true)}
         >
           Account
         </button>
@@ -1149,6 +1222,14 @@ function App() {
       {page === 'rankings' && <Rankings />}
       {page === 'stats' && <AccountStats user={user} profile={profile} onBack={() => setPage('vote')} />}
       {page === 'friends' && <FriendsPage user={user} profile={profile} onBack={() => setPage('vote')} />}
+      {page === 'account' && (
+        <AccountPage
+          user={user}
+          profile={profile}
+          onOpenSignIn={() => setAccountOpen(true)}
+          onBack={() => setPage('vote')}
+        />
+      )}
       {accountOpen && (
         <AccountModal
           user={user}
