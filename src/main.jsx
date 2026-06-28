@@ -618,7 +618,7 @@ function Rankings() {
   }
 
   return (
-    <main className="rankPage">
+    <main className={`rankPage ${showTeams ? 'teamMode' : ''}`}>
       <h1>Live Strength Ranking</h1>
 
       <div className="rankingTools">

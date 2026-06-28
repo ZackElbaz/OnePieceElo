@@ -2149,9 +2149,22 @@ nav button:active,
     overflow-y:auto;
   }
 
+  .rankPage.teamMode{
+    height:100dvh !important;
+    overflow:hidden !important;
+    display:flex !important;
+    flex-direction:column !important;
+    padding-bottom:8px !important;
+  }
+
   .rankingTools{
     gap:8px !important;
     margin:14px 0 !important;
+  }
+
+  .teamMode .rankingTools{
+    flex-shrink:0 !important;
+    margin:10px 0 !important;
   }
 
   .teamRankingsGrid{
@@ -2159,17 +2172,47 @@ nav button:active,
     gap:12px !important;
   }
 
+  .teamMode .teamRankingsGrid{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-rows:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:10px !important;
+    overflow:hidden !important;
+  }
+
   .teamColumn{
     padding:10px !important;
+  }
+
+  .teamMode .teamColumn{
+    min-height:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    overflow:hidden !important;
   }
 
   .teamColumn h2{
     font-size:18px !important;
   }
 
+  .teamMode .teamColumn h2{
+    flex-shrink:0 !important;
+    margin-bottom:8px !important;
+  }
+
   .teamList{
     max-height:38dvh !important;
     overflow:auto !important;
+  }
+
+  .teamMode .teamList{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding-right:6px !important;
   }
 
   .teamRow{
