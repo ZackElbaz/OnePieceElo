@@ -98,6 +98,10 @@ function formatConfidence(sigma) {
   return 'Low';
 }
 
+function reliabilityScore(value) {
+  return Math.round(Number(value ?? 1) * 1000);
+}
+
 function CharacterCard({ character, side, selectedState, onSelect, onInfo }) {
   const facts = character ? combatFacts(character) : null;
 
@@ -721,7 +725,7 @@ function TeamModal({ team, onClose }) {
   );
 }
 
-function AccountModal({ user, profile, onClose, onOpenStats }) {
+function AccountModal({ user, profile, onClose, onOpenStats, onOpenFriends }) {
   const [mode, setMode] = useState('signin');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -782,6 +786,7 @@ function AccountModal({ user, profile, onClose, onOpenStats }) {
             <p className="modalBio"><strong>Username:</strong> {profile?.username || user.user_metadata?.username || 'Unknown'}</p>
             <p className="muted"><strong>Email:</strong> {user.email}</p>
             <button className="accountSubmit" onClick={onOpenStats}>Stats</button>
+            <button className="accountSubmit" onClick={onOpenFriends}>Friends</button>
             <button className="accountSubmit" onClick={signOut} disabled={busy}>Sign out</button>
           </div>
         ) : (
@@ -876,8 +881,8 @@ function AccountStats({ user, profile, onBack }) {
           <strong>{stats?.voteCount ?? '...'}</strong>
         </div>
         <div className="statsCard">
-          <span>Reliability</span>
-          <strong>{reliability ? `${Math.round(Number(reliability.reliability) * 100)}%` : '100%'}</strong>
+          <span>Reliability Score</span>
+          <strong>{reliabilityScore(reliability?.reliability)}</strong>
         </div>
         <div className="statsCard">
           <span>Quick votes</span>
@@ -888,6 +893,197 @@ function AccountStats({ user, profile, onBack }) {
           <strong>{reliability?.outlier_votes ?? 0}</strong>
         </div>
       </div>
+      <button className="accountSubmit" onClick={onBack}>Back to vote</button>
+    </main>
+  );
+}
+
+function FriendsPage({ user, profile, onBack }) {
+  const [inviteUsername, setInviteUsername] = useState('');
+  const [requests, setRequests] = useState([]);
+  const [friendRows, setFriendRows] = useState([]);
+  const [profileNames, setProfileNames] = useState(new Map());
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function loadFriends() {
+    if (!user?.id) return;
+
+    const { data: requestRows } = await supabase
+      .from('friend_requests')
+      .select('*')
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+      .order('created_at', { ascending: false });
+
+    const allRequests = requestRows || [];
+    setRequests(allRequests);
+
+    const accepted = allRequests.filter(row => row.status === 'accepted');
+    const friendIds = accepted
+      .map(row => row.requester_id === user.id ? row.addressee_id : row.requester_id);
+    const visibleIds = [...new Set([user.id, ...friendIds])];
+    const involvedIds = [...new Set([
+      user.id,
+      ...allRequests.flatMap(row => [row.requester_id, row.addressee_id]),
+    ])];
+
+    const [{ data: involvedProfiles }, { data: reliability }] = await Promise.all([
+      supabase.from('profiles').select('id,username').in('id', involvedIds),
+      supabase.from('voter_reliability').select('voter_key,reliability,votes_count').in(
+        'voter_key',
+        visibleIds.map(id => `account:${id}`)
+      ),
+    ]);
+
+    setProfileNames(new Map((involvedProfiles || []).map(row => [row.id, row.username])));
+
+    const reliabilityById = new Map((reliability || []).map(row => [
+      row.voter_key.replace('account:', ''),
+      row,
+    ]));
+
+    setFriendRows((involvedProfiles || [])
+      .filter(friendProfile => visibleIds.includes(friendProfile.id))
+      .map(friendProfile => {
+        const reliabilityRow = reliabilityById.get(friendProfile.id);
+        return {
+          id: friendProfile.id,
+          username: friendProfile.username,
+          score: reliabilityScore(reliabilityRow?.reliability),
+          votes: reliabilityRow?.votes_count || 0,
+          isSelf: friendProfile.id === user.id,
+        };
+      })
+      .sort((a, b) => b.score - a.score || a.username.localeCompare(b.username)));
+  }
+
+  useEffect(() => {
+    loadFriends();
+  }, [user?.id]);
+
+  async function sendInvite(event) {
+    event.preventDefault();
+    if (!user?.id || !inviteUsername.trim()) return;
+
+    setBusy(true);
+    setMessage('');
+
+    const { data: target, error: lookupError } = await supabase
+      .from('profiles')
+      .select('id,username')
+      .ilike('username', inviteUsername.trim())
+      .maybeSingle();
+
+    if (lookupError || !target) {
+      setMessage('Could not find that username.');
+      setBusy(false);
+      return;
+    }
+
+    if (target.id === user.id) {
+      setMessage('That is your own username.');
+      setBusy(false);
+      return;
+    }
+
+    const existing = requests.find(row =>
+      (row.requester_id === user.id && row.addressee_id === target.id)
+      || (row.requester_id === target.id && row.addressee_id === user.id)
+    );
+
+    if (existing) {
+      setMessage('There is already a friend request or friendship with that user.');
+      setBusy(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('friend_requests')
+      .insert({ requester_id: user.id, addressee_id: target.id });
+
+    setBusy(false);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setInviteUsername('');
+    setMessage(`Sent friend invite to ${target.username}.`);
+    loadFriends();
+  }
+
+  async function updateRequest(id, status) {
+    setBusy(true);
+    const { error } = await supabase
+      .from('friend_requests')
+      .update({ status, responded_at: new Date().toISOString() })
+      .eq('id', id);
+    setBusy(false);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    loadFriends();
+  }
+
+  if (!user) {
+    return (
+      <main className="rankPage statsPage">
+        <h1>Friends</h1>
+        <button className="accountSubmit" onClick={onBack}>Sign in</button>
+      </main>
+    );
+  }
+
+  const incoming = requests.filter(row => row.status === 'pending' && row.addressee_id === user.id);
+
+  return (
+    <main className="rankPage statsPage friendsPage">
+      <h1>Friends</h1>
+
+      <form className="friendInviteForm" onSubmit={sendInvite}>
+        <input
+          value={inviteUsername}
+          onChange={(event) => setInviteUsername(event.target.value)}
+          placeholder="Invite by username"
+        />
+        <button className="accountSubmit" disabled={busy}>Invite</button>
+      </form>
+
+      {message && <p className="error">{message}</p>}
+
+      <section className="friendSection">
+        <h2>Invite List</h2>
+        <div className="friendRequestList">
+          {incoming.length ? incoming.map(request => (
+            <div className="friendRequestRow" key={request.id}>
+              <span>{profileNames.get(request.requester_id) || 'Friend request'}</span>
+              <div className="friendActions">
+                <button className="friendAccept" onClick={() => updateRequest(request.id, 'accepted')} disabled={busy}>✓</button>
+                <button className="friendDecline" onClick={() => updateRequest(request.id, 'declined')} disabled={busy}>×</button>
+              </div>
+            </div>
+          )) : <p className="muted">No pending invites.</p>}
+        </div>
+      </section>
+
+      <section className="friendSection">
+        <h2>Reliability Ranking</h2>
+        <div className="friendRankingList">
+          {friendRows.map((row, index) => (
+            <div className={`friendRankRow ${row.isSelf ? 'self' : ''}`} key={row.id}>
+              <strong>{index + 1}</strong>
+              <span>{row.username}{row.isSelf ? ' (you)' : ''}</span>
+              <small>{row.votes} votes</small>
+              <b>{row.score}</b>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <button className="accountSubmit" onClick={onBack}>Back to vote</button>
     </main>
   );
@@ -942,7 +1138,7 @@ function App() {
         </button>
 
         <button
-          className={accountOpen || page === 'stats' ? 'active' : ''}
+          className={accountOpen || page === 'stats' || page === 'friends' ? 'active' : ''}
           onClick={() => setAccountOpen(true)}
         >
           Account
@@ -952,6 +1148,7 @@ function App() {
       {page === 'vote' && <VoteMode user={user} onOpenAccount={() => setAccountOpen(true)} />}
       {page === 'rankings' && <Rankings />}
       {page === 'stats' && <AccountStats user={user} profile={profile} onBack={() => setPage('vote')} />}
+      {page === 'friends' && <FriendsPage user={user} profile={profile} onBack={() => setPage('vote')} />}
       {accountOpen && (
         <AccountModal
           user={user}
@@ -960,6 +1157,10 @@ function App() {
           onOpenStats={() => {
             setAccountOpen(false);
             setPage('stats');
+          }}
+          onOpenFriends={() => {
+            setAccountOpen(false);
+            setPage('friends');
           }}
         />
       )}
