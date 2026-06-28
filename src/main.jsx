@@ -460,7 +460,13 @@ const FILTERS = [
 
 function primaryAffiliation(character) {
   if (!Array.isArray(character.affiliations)) return 'Unaffiliated';
-  return character.affiliations.find(item => String(item || '').trim()) || 'Unaffiliated';
+  const ignored = ['alliance', 'disbanded', 'clan of d', 'family of d'];
+  const cleanAffiliations = character.affiliations
+    .map(item => String(item || '').trim())
+    .filter(Boolean);
+  return cleanAffiliations.find(item => !ignored.some(term => item.toLowerCase().includes(term)))
+    || cleanAffiliations[0]
+    || 'Unaffiliated';
 }
 
 function buildTeamRankings(characters) {
@@ -496,6 +502,7 @@ function Rankings() {
   const [rows, setRows] = useState([]);
   const [allRows, setAllRows] = useState([]);
   const [modalCharacter, setModalCharacter] = useState(null);
+  const [modalTeam, setModalTeam] = useState(null);
 
   useEffect(() => {
     supabase
@@ -557,8 +564,14 @@ function Rankings() {
               <div className="teamDetails">
                 <span className="teamName">{team.name}</span>
                 <small>{scoreLabel} {formatScore(team[scoreKey])} · {team.members.length} members</small>
-                <small>{team.members.slice(0, 3).map(member => member.name).join(', ')}</small>
               </div>
+              <button
+                className="teamInfo"
+                onClick={() => setModalTeam({ ...team, scoreLabel, score: team[scoreKey] })}
+                aria-label={`Show ${team.name} members`}
+              >
+                i
+              </button>
             </article>
           ))}
         </div>
@@ -590,6 +603,10 @@ function Rankings() {
             </div>
           )}
         </div>
+
+        <button className={`filterMenuButton ${!showTeams ? 'active' : ''}`} onClick={() => setShowTeams(false)}>
+          Individual Ranking
+        </button>
 
         <button className={`filterMenuButton ${showTeams ? 'active' : ''}`} onClick={() => setShowTeams(value => !value)}>
           Team Rankings
@@ -633,7 +650,36 @@ function Rankings() {
         character={modalCharacter}
         onClose={() => setModalCharacter(null)}
       />
+      <TeamModal team={modalTeam} onClose={() => setModalTeam(null)} />
     </main>
+  );
+}
+
+function TeamModal({ team, onClose }) {
+  if (!team) return null;
+
+  return (
+    <div className="modalBackdrop" onClick={onClose}>
+      <div className="modal teamModal" onClick={(e) => e.stopPropagation()}>
+        <button className="close" onClick={onClose}>x</button>
+        <h1>{team.name}</h1>
+        <p className="teamModalSummary">
+          {team.scoreLabel} {formatScore(team.score)} · {team.members.length} members
+        </p>
+        <div className="teamMemberList">
+          {team.members.map((member, index) => (
+            <div className="teamMemberRow" key={member.id}>
+              <strong>{index + 1}</strong>
+              {member.image_url ? <img src={member.image_url} alt="" /> : <div className="rankAvatar">?</div>}
+              <div>
+                <span>{member.name}</span>
+                <small>Score {formatScore(member.rating_score)}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
