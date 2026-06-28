@@ -482,7 +482,7 @@ function normalizeTeamName(affiliation) {
   if (lower.includes('mokomo dukedom')) return 'Mokomo Dukedom';
   if (lower.includes('inuarashi musketeer squad')) return 'Mokomo Dukedom';
 
-  const ignored = ['alliance', 'disbanded', 'defected', 'former', 'semi-retired', 'retired', 'unaffiliated', 'clan of d'];
+  const ignored = ['alliance', 'disbanded', 'defected', 'semi-retired', 'retired', 'unaffiliated', 'clan of d'];
   if (ignored.some(term => lower.includes(term))) return null;
 
   if (lower.includes('revolutionary army')) return 'Revolutionary Army';
@@ -490,6 +490,7 @@ function normalizeTeamName(affiliation) {
   if (lower.includes('new fish-man pirates')) return 'New Fish-Man Pirates';
   if (lower.includes('roger pirates')) return 'Roger Pirates';
   if (lower === 'roger') return 'Roger Pirates';
+  if (lower.includes('rumbar pirates')) return 'Rumbar Pirates';
   if (lower.includes('straw hat pirates')) return 'Straw Hat Pirates';
   if (lower.includes('whitebeard pirates')) return 'Whitebeard Pirates';
   if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
