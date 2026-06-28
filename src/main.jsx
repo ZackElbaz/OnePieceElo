@@ -477,18 +477,19 @@ function normalizeTeamName(affiliation) {
   const lower = value.toLowerCase();
 
   if (lower.includes('sword') && lower.includes('marine')) return 'Marines (SWORD)';
+  if (lower.includes('marine')) return 'Marines';
   if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
   if (lower.includes('mokomo dukedom')) return 'Mokomo Dukedom';
   if (lower.includes('inuarashi musketeer squad')) return 'Mokomo Dukedom';
 
-  const ignored = ['alliance', 'disbanded', 'defected', 'former', 'semi-retired', 'retired', 'unaffiliated'];
+  const ignored = ['alliance', 'disbanded', 'defected', 'former', 'semi-retired', 'retired', 'unaffiliated', 'clan of d'];
   if (ignored.some(term => lower.includes(term))) return null;
 
-  if (lower.includes('marine')) return 'Marines';
   if (lower.includes('revolutionary army')) return 'Revolutionary Army';
   if (lower.includes('beasts pirates')) return 'Beasts Pirates';
   if (lower.includes('new fish-man pirates')) return 'New Fish-Man Pirates';
   if (lower.includes('roger pirates')) return 'Roger Pirates';
+  if (lower === 'roger') return 'Roger Pirates';
   if (lower.includes('straw hat pirates')) return 'Straw Hat Pirates';
   if (lower.includes('whitebeard pirates')) return 'Whitebeard Pirates';
   if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
