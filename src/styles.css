@@ -1996,6 +1996,46 @@ nav button:active,
   padding-right:4px;
 }
 
+.teamList,
+.teamMemberList{
+  scrollbar-width:auto;
+  scrollbar-color:#93c5fd #111827;
+}
+
+.teamList::-webkit-scrollbar,
+.teamMemberList::-webkit-scrollbar{
+  width:10px;
+}
+
+.teamList::-webkit-scrollbar-track,
+.teamMemberList::-webkit-scrollbar-track{
+  background:#111827;
+  border-radius:999px;
+}
+
+.teamList::-webkit-scrollbar-thumb,
+.teamMemberList::-webkit-scrollbar-thumb{
+  background:#172033;
+  border:1px solid #93c5fd;
+  border-radius:999px;
+  box-shadow:
+    0 0 12px rgba(147,197,253,0.15),
+    inset 0 0 6px rgba(147,197,253,0.08);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.teamList::-webkit-scrollbar-thumb:hover,
+.teamMemberList::-webkit-scrollbar-thumb:hover{
+  background:#1e293b;
+  border-color:#93c5fd;
+  box-shadow:
+    0 0 12px rgba(147,197,253,0.25),
+    0 0 30px rgba(59,130,246,0.15);
+}
+
 .teamRow{
   display:grid;
   grid-template-columns:42px minmax(0,1fr) 46px;

@@ -459,28 +459,49 @@ const FILTERS = [
 ];
 
 function primaryAffiliation(character) {
-  if (!Array.isArray(character.affiliations)) return 'Unaffiliated';
-  const ignored = ['alliance', 'disbanded', 'clan of d', 'family of d'];
+  if (!Array.isArray(character.affiliations)) return null;
   const cleanAffiliations = character.affiliations
     .map(item => String(item || '').trim())
     .filter(Boolean);
-  const affiliation = cleanAffiliations.find(item => !ignored.some(term => item.toLowerCase().includes(term)))
-    || cleanAffiliations[0]
-    || 'Unaffiliated';
-  return normalizeTeamName(affiliation);
+
+  for (const affiliation of cleanAffiliations) {
+    const teamName = normalizeTeamName(affiliation);
+    if (teamName) return teamName;
+  }
+
+  return null;
 }
 
 function normalizeTeamName(affiliation) {
   const value = String(affiliation || '').trim();
   const lower = value.toLowerCase();
 
-  if (lower.includes('sword')) return 'Marines (SWORD)';
+  if (lower.includes('sword') && lower.includes('marine')) return 'Marines (SWORD)';
+  if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
+  if (lower.includes('mokomo dukedom')) return 'Mokomo Dukedom';
+  if (lower.includes('inuarashi musketeer squad')) return 'Mokomo Dukedom';
+
+  const ignored = ['alliance', 'disbanded', 'defected', 'former', 'semi-retired', 'retired', 'unaffiliated'];
+  if (ignored.some(term => lower.includes(term))) return null;
+
   if (lower.includes('marine')) return 'Marines';
+  if (lower.includes('revolutionary army')) return 'Revolutionary Army';
+  if (lower.includes('beasts pirates')) return 'Beasts Pirates';
+  if (lower.includes('new fish-man pirates')) return 'New Fish-Man Pirates';
+  if (lower.includes('roger pirates')) return 'Roger Pirates';
+  if (lower.includes('straw hat pirates')) return 'Straw Hat Pirates';
+  if (lower.includes('whitebeard pirates')) return 'Whitebeard Pirates';
+  if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
+  if (lower.includes('arabasta kingdom')) return 'Arabasta Kingdom';
+  if (lower.includes('baroque works')) return 'Baroque Works';
+  if (lower.includes('galley-la company')) return 'Galley-La Company';
+  if (lower.includes('takoyaki 8')) return 'Takoyaki 8';
+  if (lower.includes('mermaid cafe') || lower.includes('mermaid café')) return 'Mermaid Cafe';
 
   return value
     .replace(/\s*\((?:former|semi-retired|retired|disbanded)\)\s*/gi, '')
     .replace(/\s+/g, ' ')
-    .trim() || 'Unaffiliated';
+    .trim() || null;
 }
 
 function buildTeamRankings(characters) {
@@ -488,6 +509,7 @@ function buildTeamRankings(characters) {
 
   for (const character of characters) {
     const name = primaryAffiliation(character);
+    if (!name) continue;
     const team = teams.get(name) || {
       name,
       totalScore: 0,
