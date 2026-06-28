@@ -1955,9 +1955,126 @@ nav button:active,
   overflow-y:auto;
 }
 
+.rankingTools{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:20px 0;
+}
+
+.rankingTools .filterMenuWrap{
+  margin:0;
+}
+
+.teamRankingsGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  min-height:0;
+}
+
+.teamColumn{
+  min-width:0;
+  background:#0f172a;
+  border:1px solid #263247;
+  border-radius:14px;
+  padding:12px;
+}
+
+.teamColumn h2{
+  margin:0 0 12px;
+  color:white;
+  font-size:18px;
+}
+
+.teamList{
+  display:grid;
+  gap:8px;
+  max-height:calc(100dvh - 230px);
+  overflow:auto;
+  padding-right:4px;
+}
+
+.teamRow{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  min-height:72px;
+  padding:10px;
+  background:#111827;
+  border:1px solid #1f2a3d;
+  border-radius:12px;
+}
+
+.teamRank{
+  color:white;
+  font-size:22px;
+  text-align:center;
+}
+
+.teamDetails{
+  display:grid;
+  gap:4px;
+  min-width:0;
+}
+
+.teamName{
+  color:white;
+  font-size:17px;
+  font-weight:800;
+  line-height:1.15;
+}
+
+.teamDetails small{
+  color:#aebbd0;
+  font-size:12px;
+  line-height:1.2;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 @media (max-width: 768px), (orientation: portrait){
   .rankPage{
     overflow-y:auto;
+  }
+
+  .rankingTools{
+    gap:8px !important;
+    margin:14px 0 !important;
+  }
+
+  .teamRankingsGrid{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  .teamColumn{
+    padding:10px !important;
+  }
+
+  .teamColumn h2{
+    font-size:18px !important;
+  }
+
+  .teamList{
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  .teamRow{
+    min-height:74px !important;
+    padding:9px !important;
+  }
+
+  .teamName{
+    font-size:17px !important;
+  }
+
+  .teamDetails small{
+    font-size:12px !important;
   }
 
   .rankList{

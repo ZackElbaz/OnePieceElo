@@ -458,11 +458,53 @@ const FILTERS = [
   ['male', 'Men']
 ];
 
+function primaryAffiliation(character) {
+  if (!Array.isArray(character.affiliations)) return 'Unaffiliated';
+  return character.affiliations.find(item => String(item || '').trim()) || 'Unaffiliated';
+}
+
+function buildTeamRankings(characters) {
+  const teams = new Map();
+
+  for (const character of characters) {
+    const name = primaryAffiliation(character);
+    const team = teams.get(name) || {
+      name,
+      totalScore: 0,
+      averageScore: 0,
+      members: [],
+    };
+
+    team.members.push(character);
+    team.totalScore += Number(character.rating_score || 0);
+    teams.set(name, team);
+  }
+
+  return [...teams.values()]
+    .map(team => ({
+      ...team,
+      averageScore: team.members.length ? team.totalScore / team.members.length : 0,
+      members: team.members.sort((a, b) => Number(b.rating_score || 0) - Number(a.rating_score || 0)),
+    }))
+    .filter(team => team.members.length > 0);
+}
+
 function Rankings() {
   const [filters, setFilters] = useState([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showTeams, setShowTeams] = useState(false);
   const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
   const [modalCharacter, setModalCharacter] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from('character_rankings')
+      .select('*')
+      .order('rating_score', { ascending: false })
+      .limit(1000)
+      .then(({ data }) => setAllRows(data || []));
+  }, []);
 
   useEffect(() => {
     let q = supabase
@@ -494,30 +536,72 @@ function Rankings() {
       : [...current, id]);
   }
 
+  const teamRankings = useMemo(() => buildTeamRankings(allRows.length ? allRows : rows), [allRows, rows]);
+  const totalTeams = useMemo(
+    () => [...teamRankings].sort((a, b) => b.totalScore - a.totalScore),
+    [teamRankings]
+  );
+  const averageTeams = useMemo(
+    () => [...teamRankings].sort((a, b) => b.averageScore - a.averageScore),
+    [teamRankings]
+  );
+
+  function renderTeamColumn(title, teams, scoreKey, scoreLabel) {
+    return (
+      <section className="teamColumn">
+        <h2>{title}</h2>
+        <div className="teamList">
+          {teams.map((team, index) => (
+            <article className="teamRow" key={`${scoreKey}-${team.name}`}>
+              <strong className="teamRank">{index + 1}</strong>
+              <div className="teamDetails">
+                <span className="teamName">{team.name}</span>
+                <small>{scoreLabel} {formatScore(team[scoreKey])} · {team.members.length} members</small>
+                <small>{team.members.slice(0, 3).map(member => member.name).join(', ')}</small>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <main className="rankPage">
       <h1>Live Strength Ranking</h1>
 
-      <div className="filterMenuWrap">
-        <button className={`filterMenuButton ${filtersOpen ? 'active' : ''}`} onClick={() => setFiltersOpen(open => !open)}>
-          Filters{filters.length ? ` (${filters.length})` : ''}
-        </button>
-        {filtersOpen && (
-          <div className="filterMenu">
-            <label className="filterOption">
-              <input type="checkbox" checked={!filters.length} onChange={() => setFilters([])} />
-              All characters
-            </label>
-            {FILTERS.map(([id, label]) => (
-              <label className="filterOption" key={id}>
-                <input type="checkbox" checked={filters.includes(id)} onChange={() => toggleFilter(id)} />
-                {label}
+      <div className="rankingTools">
+        <div className="filterMenuWrap">
+          <button className={`filterMenuButton ${filtersOpen ? 'active' : ''}`} onClick={() => setFiltersOpen(open => !open)}>
+            Filters{filters.length ? ` (${filters.length})` : ''}
+          </button>
+          {filtersOpen && (
+            <div className="filterMenu">
+              <label className="filterOption">
+                <input type="checkbox" checked={!filters.length} onChange={() => setFilters([])} />
+                All characters
               </label>
-            ))}
-          </div>
-        )}
+              {FILTERS.map(([id, label]) => (
+                <label className="filterOption" key={id}>
+                  <input type="checkbox" checked={filters.includes(id)} onChange={() => toggleFilter(id)} />
+                  {label}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className={`filterMenuButton ${showTeams ? 'active' : ''}`} onClick={() => setShowTeams(value => !value)}>
+          Team Rankings
+        </button>
       </div>
 
+      {showTeams ? (
+        <div className="teamRankingsGrid">
+          {renderTeamColumn('Total Team Ranking', totalTeams, 'totalScore', 'Total')}
+          {renderTeamColumn('Average Team Ranking', averageTeams, 'averageScore', 'Average')}
+        </div>
+      ) : (
       <div className="rankList">
         {rows.map((c, i) => (
           <div className="rankRow" key={c.id}>
@@ -543,6 +627,7 @@ function Rankings() {
           </div>
         ))}
       </div>
+      )}
 
       <InfoModal
         character={modalCharacter}
