@@ -464,9 +464,23 @@ function primaryAffiliation(character) {
   const cleanAffiliations = character.affiliations
     .map(item => String(item || '').trim())
     .filter(Boolean);
-  return cleanAffiliations.find(item => !ignored.some(term => item.toLowerCase().includes(term)))
+  const affiliation = cleanAffiliations.find(item => !ignored.some(term => item.toLowerCase().includes(term)))
     || cleanAffiliations[0]
     || 'Unaffiliated';
+  return normalizeTeamName(affiliation);
+}
+
+function normalizeTeamName(affiliation) {
+  const value = String(affiliation || '').trim();
+  const lower = value.toLowerCase();
+
+  if (lower.includes('sword')) return 'Marines (SWORD)';
+  if (lower.includes('marine')) return 'Marines';
+
+  return value
+    .replace(/\s*\((?:former|semi-retired|retired|disbanded)\)\s*/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim() || 'Unaffiliated';
 }
 
 function buildTeamRankings(characters) {
