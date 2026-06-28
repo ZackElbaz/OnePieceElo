@@ -464,6 +464,10 @@ const FILTERS = [
 
 function primaryAffiliation(character) {
   if (!Array.isArray(character.affiliations)) return null;
+  const characterName = String(character.name || '').toLowerCase();
+  if (characterName === 'karoo') return 'Arabasta Kingdom';
+  if (characterName === 'page one' || characterName === 'ulti') return 'Beasts Pirates';
+
   const cleanAffiliations = character.affiliations
     .map(item => String(item || '').trim())
     .filter(Boolean);
@@ -491,12 +495,18 @@ function normalizeTeamName(affiliation) {
 
   if (lower.includes('revolutionary army')) return 'Revolutionary Army';
   if (lower.includes('beasts pirates')) return 'Beasts Pirates';
+  if (lower.includes('animal kingdom pirates')) return 'Beasts Pirates';
   if (lower.includes('new fish-man pirates')) return 'New Fish-Man Pirates';
   if (lower.includes('roger pirates')) return 'Roger Pirates';
   if (lower === 'roger') return 'Roger Pirates';
   if (lower.includes('rumbar pirates')) return 'Rumbar Pirates';
   if (lower.includes('straw hat pirates')) return 'Straw Hat Pirates';
   if (lower.includes('whitebeard pirates')) return 'Whitebeard Pirates';
+  if (lower.includes('big mom pirates') || lower.includes('charlotte family')) return 'Big Mom Pirates';
+  if (lower.includes('kuja pirates') || lower === 'kuja' || lower.includes('kuja tribe')) return 'Kuja Pirates';
+  if (lower.includes('heart pirates')) return 'Heart Pirates';
+  if (lower.includes('kid pirates')) return 'Kid Pirates';
+  if (lower.includes('five elders') || lower.includes('world government')) return 'World Government';
   if (lower.includes('giant warrior pirates')) return 'Giant Warrior Pirates';
   if (lower.includes('arabasta kingdom')) return 'Arabasta Kingdom';
   if (lower.includes('baroque works')) return 'Baroque Works';
@@ -627,7 +637,7 @@ function Rankings() {
 
       <div className="rankingTools">
         <div className="filterMenuWrap">
-          <button className={`filterMenuButton ${filtersOpen ? 'active' : ''}`} onClick={() => setFiltersOpen(open => !open)}>
+          <button className={`filterMenuButton filtersToggle ${filtersOpen ? 'active' : ''}`} onClick={() => setFiltersOpen(open => !open)}>
             Filters{filters.length ? ` (${filters.length})` : ''}
           </button>
           {filtersOpen && (
