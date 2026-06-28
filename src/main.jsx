@@ -1205,6 +1205,11 @@ function App() {
 
   return (
     <>
+      <div className="siteLogo" aria-label="One Piece Power Ranking">
+        <span className="logoMark">OP</span>
+        <span className="logoText">Power Rank</span>
+      </div>
+
       <nav>
         <button
           className={page === 'vote' ? 'active' : ''}

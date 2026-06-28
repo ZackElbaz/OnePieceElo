@@ -332,7 +332,18 @@ as $$
     select
       cr.*,
       count(*) over ()::integer as roster_size,
-      (1 + least(6, cr.rating_sigma / 70) + (3 / sqrt(cr.comparisons + 1))) as test_weight
+      (
+        1
+        + least(6, cr.rating_sigma / 70)
+        + (9 / sqrt(cr.comparisons + 1))
+        + case
+            when cr.comparisons = 0 then 10
+            when cr.comparisons < 3 then 6
+            when cr.comparisons < 8 then 3
+            when cr.comparisons < 15 then 1.5
+            else 0
+          end
+      ) as test_weight
     from public.character_rankings cr
   ),
   first_pick as (
@@ -375,7 +386,14 @@ as $$
           )
       )
       - least(r.rating_sigma, 350) * 0.12
-      - (18 / sqrt(r.comparisons + 1))
+      - (42 / sqrt(r.comparisons + 1))
+      - case
+          when r.comparisons = 0 then 18
+          when r.comparisons < 3 then 11
+          when r.comparisons < 8 then 6
+          when r.comparisons < 15 then 3
+          else 0
+        end
       + random() * case
           when t.mode_roll < 0.08 then t.rank_sigma * 0.85
           when t.mode_roll < 0.22 then t.rank_sigma * 0.35

@@ -20,6 +20,11 @@ const characters = [
 ['Cabaji', 'Cabaji'],
 ['Richie', 'Richie'],
 
+// Cross Guild
+['Dracule Mihawk', 'Dracule_Mihawk'],
+['Crocodile', 'Crocodile'],
+['Daz Bonez', 'Daz_Bonez'],
+
 // Vegapunks
 ['Vegapunk', 'Vegapunk'],
 ['Shaka', 'Shaka'],
@@ -34,6 +39,95 @@ const characters = [
 ['Brogy', 'Brogy'],
 ['Oimo', 'Oimo'],
 ['Kashii', 'Kashii'],
+
+// SWORD / Marines / World Government
+['Koby', 'Koby'],
+['Helmeppo', 'Helmeppo'],
+['X Drake', 'X_Drake'],
+['Hibari', 'Hibari'],
+['Prince Grus', 'Prince_Grus'],
+['Kujaku', 'Kujaku'],
+['Monkey D. Garp', 'Monkey_D._Garp'],
+['Bogard', 'Bogard'],
+['Tsuru', 'Tsuru'],
+['Smoker', 'Smoker'],
+['Tashigi', 'Tashigi'],
+['Hina', 'Hina'],
+['Sentomaru', 'Sentomaru'],
+['Kong', 'Kong'],
+['Saint Jaygarcia Saturn', 'Jaygarcia_Saturn'],
+['Saint Marcus Mars', 'Marcus_Mars'],
+['Saint Topman Warcury', 'Topman_Warcury'],
+['Saint Ethanbaron V. Nusjuro', 'Ethanbaron_V._Nusjuro'],
+['Saint Shepherd Ju Peter', 'Shepherd_Ju_Peter'],
+
+// Roger Pirates
+['Silvers Rayleigh', 'Silvers_Rayleigh'],
+['Scopper Gaban', 'Scopper_Gaban'],
+['Crocus', 'Crocus'],
+['Kozuki Oden', 'Kozuki_Oden'],
+['Shanks', 'Shanks'],
+['Buggy', 'Buggy'],
+
+// Whitebeard Pirates
+['Marco', 'Marco'],
+['Jozu', 'Jozu'],
+['Vista', 'Vista'],
+['Thatch', 'Thatch'],
+['Izo', 'Izo'],
+['Blamenco', 'Blamenco'],
+['Rakuyo', 'Rakuyo'],
+['Namur', 'Namur'],
+['Fossa', 'Fossa'],
+['Curiel', 'Curiel'],
+['Kingdew', 'Kingdew'],
+['Haruta', 'Haruta'],
+['Atmos', 'Atmos'],
+['Speed Jiru', 'Speed_Jiru'],
+['A O', 'A_O'],
+['Squard', 'Squard'],
+
+// Heart Pirates
+['Trafalgar D. Water Law', 'Trafalgar_D._Water_Law'],
+['Bepo', 'Bepo'],
+['Shachi', 'Shachi'],
+['Penguin', 'Penguin'],
+['Jean Bart', 'Jean_Bart'],
+['Ikkaku', 'Ikkaku'],
+
+// Kid Pirates
+['Eustass Kid', 'Eustass_Kid'],
+['Killer', 'Killer'],
+['Heat', 'Heat'],
+['Wire', 'Wire'],
+
+// Big Mom Pirates / Charlotte Family
+['Charlotte Linlin', 'Charlotte_Linlin'],
+['Charlotte Katakuri', 'Charlotte_Katakuri'],
+['Charlotte Perospero', 'Charlotte_Perospero'],
+['Charlotte Smoothie', 'Charlotte_Smoothie'],
+['Charlotte Cracker', 'Charlotte_Cracker'],
+['Charlotte Oven', 'Charlotte_Oven'],
+['Charlotte Daifuku', 'Charlotte_Daifuku'],
+['Charlotte Snack', 'Charlotte_Snack'],
+['Charlotte Brulee', 'Charlotte_Brulee'],
+['Charlotte Mont-d\'Or', 'Charlotte_Mont-d\'Or'],
+['Charlotte Amande', 'Charlotte_Amande'],
+['Charlotte Opera', 'Charlotte_Opera'],
+['Charlotte Compote', 'Charlotte_Compote'],
+['Tamago', 'Tamago'],
+['Pekoms', 'Pekoms'],
+
+// Kuja Pirates
+['Boa Hancock', 'Boa_Hancock'],
+['Boa Sandersonia', 'Boa_Sandersonia'],
+['Boa Marigold', 'Boa_Marigold'],
+['Gloriosa', 'Gloriosa'],
+['Shakuyaku', 'Shakuyaku'],
+
+// Beasts Pirates
+['Ulti', 'Ulti'],
+['Page One', 'Page_One'],
 
 // Fish-Man Island
 ['Hody Jones', 'Hody_Jones'],
@@ -68,6 +162,9 @@ const characters = [
 ['Oars', 'Oars'],
 ['Little Oars Jr.', 'Little_Oars_Jr.'],
 
+// Arabasta
+['Karoo', 'Karoo'],
+
 // Franky Family
 ['Mozu', 'Mozu'],
 ['Kiwi', 'Kiwi'],
@@ -94,7 +191,7 @@ const characters = [
 const unique = new Map();
 
 for (const [name, wiki_title] of characters) {
-  unique.set(wiki_title, {
+  unique.set(name, {
     name,
     wiki_title,
     wiki_url: `${WIKI_BASE}${wiki_title}`,
@@ -106,13 +203,30 @@ for (const [name, wiki_title] of characters) {
 
 const rows = [...unique.values()];
 
+const { data: existingCharacters, error: existingError } = await supabase
+  .from('characters')
+  .select('name');
+
+if (existingError) {
+  console.error(existingError);
+  process.exit(1);
+}
+
+const existingNames = new Set((existingCharacters || []).map(character => character.name));
+const newRows = rows.filter(row => !existingNames.has(row.name));
+
+if (!newRows.length) {
+  console.log('No new curated characters to seed.');
+  process.exit(0);
+}
+
 const { error } = await supabase
   .from('characters')
-  .upsert(rows, { onConflict: 'wiki_title' });
+  .insert(newRows);
 
 if (error) {
   console.error(error);
   process.exit(1);
 }
 
-console.log(`Seeded ${rows.length} curated mainstream characters.`);
+console.log(`Seeded ${newRows.length} new curated mainstream characters.`);
