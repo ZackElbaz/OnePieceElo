@@ -920,6 +920,7 @@ function FriendsPage({ user, profile, onBack, embedded = false }) {
   const [inviteUsername, setInviteUsername] = useState('');
   const [requests, setRequests] = useState([]);
   const [friendRows, setFriendRows] = useState([]);
+  const [rankingTab, setRankingTab] = useState('reliability');
   const [profileNames, setProfileNames] = useState(new Map());
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -1057,6 +1058,10 @@ function FriendsPage({ user, profile, onBack, embedded = false }) {
   }
 
   const incoming = requests.filter(row => row.status === 'pending' && row.addressee_id === user.id);
+  const displayedFriends = [...friendRows].sort((a, b) => {
+    if (rankingTab === 'votes') return b.votes - a.votes || b.score - a.score || a.username.localeCompare(b.username);
+    return b.score - a.score || b.votes - a.votes || a.username.localeCompare(b.username);
+  });
 
   const content = (
     <>
@@ -1087,14 +1092,20 @@ function FriendsPage({ user, profile, onBack, embedded = false }) {
       </section>
 
       <section className="friendSection">
-        <h2>Reliability Ranking</h2>
+        <div className="friendRankingHeader">
+          <h2>{rankingTab === 'votes' ? 'Vote Ranking' : 'Reliability Ranking'}</h2>
+          <div className="modalTabs friendRankingTabs">
+            <button className={rankingTab === 'reliability' ? 'active' : ''} onClick={() => setRankingTab('reliability')}>Reliability</button>
+            <button className={rankingTab === 'votes' ? 'active' : ''} onClick={() => setRankingTab('votes')}>Votes</button>
+          </div>
+        </div>
         <div className="friendRankingList">
-          {friendRows.map((row, index) => (
+          {displayedFriends.map((row, index) => (
             <div className={`friendRankRow ${row.isSelf ? 'self' : ''}`} key={row.id}>
               <strong>{index + 1}</strong>
               <span>{row.username}{row.isSelf ? ' (you)' : ''}</span>
-              <small>{row.votes} votes</small>
-              <b>{row.score}</b>
+              <small>{rankingTab === 'votes' ? `${row.score} reliability` : `${row.votes} votes`}</small>
+              <b>{rankingTab === 'votes' ? row.votes : row.score}</b>
             </div>
           ))}
         </div>

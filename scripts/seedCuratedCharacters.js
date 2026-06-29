@@ -75,16 +75,10 @@ const characters = [
 ['Vista', 'Vista'],
 ['Thatch', 'Thatch'],
 ['Izo', 'Izo'],
-['Blamenco', 'Blamenco'],
-['Rakuyo', 'Rakuyo'],
 ['Namur', 'Namur'],
 ['Fossa', 'Fossa'],
-['Curiel', 'Curiel'],
-['Kingdew', 'Kingdew'],
 ['Haruta', 'Haruta'],
-['Atmos', 'Atmos'],
 ['Speed Jiru', 'Speed_Jiru'],
-['A O', 'A_O'],
 ['Squard', 'Squard'],
 
 // Heart Pirates
@@ -93,13 +87,10 @@ const characters = [
 ['Shachi', 'Shachi'],
 ['Penguin', 'Penguin'],
 ['Jean Bart', 'Jean_Bart'],
-['Ikkaku', 'Ikkaku'],
 
 // Kid Pirates
 ['Eustass Kid', 'Eustass_Kid'],
 ['Killer', 'Killer'],
-['Heat', 'Heat'],
-['Wire', 'Wire'],
 
 // Big Mom Pirates / Charlotte Family
 ['Charlotte Linlin', 'Charlotte_Linlin'],
@@ -109,12 +100,9 @@ const characters = [
 ['Charlotte Cracker', 'Charlotte_Cracker'],
 ['Charlotte Oven', 'Charlotte_Oven'],
 ['Charlotte Daifuku', 'Charlotte_Daifuku'],
-['Charlotte Snack', 'Charlotte_Snack'],
 ['Charlotte Brulee', 'Charlotte_Brulee'],
 ['Charlotte Mont-d\'Or', 'Charlotte_Mont-d\'Or'],
-['Charlotte Amande', 'Charlotte_Amande'],
 ['Charlotte Opera', 'Charlotte_Opera'],
-['Charlotte Compote', 'Charlotte_Compote'],
 ['Tamago', 'Tamago'],
 ['Pekoms', 'Pekoms'],
 
@@ -123,7 +111,6 @@ const characters = [
 ['Boa Sandersonia', 'Boa_Sandersonia'],
 ['Boa Marigold', 'Boa_Marigold'],
 ['Gloriosa', 'Gloriosa'],
-['Shakuyaku', 'Shakuyaku'],
 
 // Beasts Pirates
 ['Ulti', 'Ulti'],
@@ -169,7 +156,6 @@ const characters = [
 ['Mozu', 'Mozu'],
 ['Kiwi', 'Kiwi'],
 ['Zambai', 'Zambai'],
-['Tamagon', 'Tamagon'],
 
 // Corrida Colosseum / Dressrosa
 ['Hajrudin', 'Hajrudin'],

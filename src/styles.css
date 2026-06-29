@@ -1210,6 +1210,29 @@ nav button:active,
   font-size:22px;
 }
 
+.friendRankingHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.friendRankingHeader h2{
+  margin:0;
+}
+
+.friendRankingTabs{
+  margin:0;
+  flex-shrink:0;
+}
+
+.friendRankingTabs button{
+  min-height:38px;
+  padding:7px 12px;
+  font-size:14px;
+}
+
 .friendRequestList,
 .friendRankingList{
   display:grid;
@@ -2569,6 +2592,15 @@ nav button:active,
   .friendRankingList,
   .friendRequestList{
     max-height:32dvh !important;
+  }
+
+  .friendRankingHeader{
+    display:grid !important;
+    gap:8px !important;
+  }
+
+  .friendRankingTabs{
+    width:max-content !important;
   }
 
   .friendRankRow{
